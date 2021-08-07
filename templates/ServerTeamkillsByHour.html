@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+
+    <base href="{{BasePath}}">
+    <!--<base href="file:///C:/Users/xfile/source/repos/BF4Seeder/HtmlToImage/Templates/">-->
+    <link rel="stylesheet" type="text/css" href="bf4.css">
+    <link rel="stylesheet" type="text/css" href="bf4-static.css">
+    <link rel="stylesheet" type="text/css" href="battlelog.css">
+</head>
+<body>
+    <table class="table table-hover scoreboard" cellpadding="0">
+        <thead>
+            <tr class="tr-color-allied">
+                <th colspan="2">
+                    Teamkills By Hour
+                </th>
+                <th class="center">Kills</th>
+                <th class="center">Deaths</th>
+                <th class="center">TKS</th>
+                <th class="center">TKH</th>
+                <th class="center">Playtime</th>
+                <th class="last right">Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#Players}}
+            <tr class="battlereport-teamstats-row pos_nr1 player">
+                <td class="center">
+                    <span>{{Position}}</span>
+                </td>
+                <td class="soldier-name">
+                    <div class="user-personarank">
+                        <div class="bf4-rank rank small r{{Rank}} rank_icon" data-rank="{{Rank}}"></div>
+                    </div>
+                    <div class="user-info">
+                        <div class="common-playername-personaname solo">
+                            <span class="common-playername-personaname-nolink">{{SoldierName}}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="center">{{Kills}}</td>
+                <td class="center">{{Deaths}}</td>
+                <td class="center">{{TKS}}</td>
+                <td class="center">{{TeamKillsByHour}}</td>
+                <td class="center">{{PlaytimeFormatted}}</td>
+                <td class="last right">{{Score}}</td>
+            </tr>
+            {{/Players}}
+        </tbody>
+    </table>
+</body>
+</html>

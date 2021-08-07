@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+
+    <base href="{{base_path}}">
+    <!-- <base href="file:///C:/Users/xfile/Documents/Visual%20Studio%20Code/Projects/BFStats/templates/"> -->
+    <link rel="stylesheet" type="text/css" href="bf4.css">
+    <link rel="stylesheet" type="text/css" href="bf4-static.css">
+    <link rel="stylesheet" type="text/css" href="battlelog.css">
+</head>
+<body>
+    <table class="table table-hover scoreboard" cellpadding="0">
+        <thead>
+            <tr class="tr-color-allied">
+                <th colspan="2">
+                    Server Ranks
+                </th>
+                <th class="center">Kills</th>
+                <th class="center">Deaths</th>
+                <th class="center">KDR</th>
+                <th class="center">TKS</th>
+                <th class="center">Suicides</th>
+                <th class="last right">Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each players}}
+            <tr class="battlereport-teamstats-row pos_nr1 player">
+                <td class="center">
+                    <span>{{position}}</span>
+                </td>
+                <td class="soldier-name">
+                    <div class="user-personarank">
+                        <div class="bf4-rank rank small r{{global_rank}} rank_icon" data-rank="{{global_rank}}"></div>
+                    </div>
+                    <div class="user-info">
+                        <div class="common-playername-personaname solo">
+                            <span class="common-playername-personaname-nolink">{{soldiername}}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="center">{{kills}}</td>
+                <td class="center">{{deaths}}</td>
+                <td class="center">{{kdr}}</td>
+                <td class="center">{{teamkills}}</td>
+                <td class="center">{{suicides}}</td>
+                <td class="last right">{{score}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</body>
+</html>

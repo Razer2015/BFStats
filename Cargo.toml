@@ -1,0 +1,24 @@
+[package]
+name = "bfstats"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dotenv = "0.15"
+serenity = { git = "https://github.com/serenity-rs/serenity", rev = "3ee7a4c171821b978f97a36471a701fa89d5e037", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "unstable_discord_api"] }
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+anyhow = "1.0.42"
+rand = "0.8.4"
+lazy_static = "1.4.0"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1.0.64" }
+
+sqlx = { version = "0.5", features = [ "runtime-tokio-rustls", "mysql", "time" ] }
+
+handlebars = "4.1.1"
+wkhtmltopdf = "0.4.0"
+tempfile = "3.2.0"
+oxipng = "5.0.0"

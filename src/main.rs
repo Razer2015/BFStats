@@ -24,7 +24,7 @@ use serenity::{
     prelude::*,
 };
 use sqlx::MySqlPool;
-use crate::global_data::HandlebarsContext;
+use crate::{global_data::HandlebarsContext, stats::handle_teamkillsbyhour_interaction};
 
 struct Handler;
 
@@ -34,9 +34,31 @@ impl EventHandler for Handler {
         if let Interaction::ApplicationCommand(command) = interaction {
             match command.data.name.as_str() {
                 "top" => {
-                    if let Err(why) = handle_top_interaction(ctx, command).await {
-                        println!("Error: {}", why)
+                    let score_type = command.data.options.iter()
+                        .find(|elem| elem.name == "type")
+                        .and_then(|opt| opt.value.as_ref())
+                        .and_then(|num| num.as_str())
+                        .unwrap_or("unknown");
+                    
+                    match score_type {
+                        "type_score" => {
+                            if let Err(why) = handle_top_interaction(ctx, command).await {
+                                println!("Error: {}", why)
+                            };
+                        },
+                        "type_teamkills" => {
+                            if let Err(why) = handle_top_interaction(ctx, command).await {
+                                println!("Error: {}", why)
+                            };
+                        },
+                        "type_teamkillbyhour" => {
+                            if let Err(why) = handle_teamkillsbyhour_interaction(ctx, command).await {
+                                println!("Error: {}", why)
+                            };
+                        },
+                        _ => println!("Unknown score type: {}", score_type),
                     };
+                    
                 },
                 "rank" => {
                     // if let Err(why) = handle_top_interaction(ctx, command).await {
@@ -55,6 +77,26 @@ impl EventHandler for Handler {
                     "name": "top",
                     "description": "Command to get top players in the server.",
                     "options": [
+                        {
+                            "name": "type",
+                            "description": "The type of stats",
+                            "type": 3,
+                            "required": true,
+                            "choices": [
+                                {
+                                    "name": "Score",
+                                    "value": "type_score"
+                                },
+                                {
+                                    "name": "Teamkills",
+                                    "value": "type_teamkills"
+                                },
+                                {
+                                    "name": "Teamkills by hour",
+                                    "value": "type_teamkillbyhour"
+                                }
+                            ]
+                        },
                         {
                             "type": 4,
                             "name": "count",
@@ -123,6 +165,9 @@ async fn main() {
         let mut handlebars = Handlebars::new();
         handlebars
             .register_template_file("ServerRanks", "./templates/ServerRanks.html")
+            .unwrap();
+        handlebars
+            .register_template_file("ServerTeamkillsByHour", "./templates/ServerTeamkillsByHour.html")
             .unwrap();
 
         data.insert::<HandlebarsContext>(handlebars);

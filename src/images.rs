@@ -3,10 +3,14 @@ use oxipng::PngError;
 use serde::Serialize;
 
 use crate::html_png::html_to_png;
-use crate::models::ServerRankTemplate;
+use crate::models::{ServerScoreTemplate, ServerTeamkillsTemplate};
 
-pub async fn generate_server_ranks_image(handlebars: Handlebars<'_>, template_data: ServerRankTemplate) -> Result<Vec<u8>, anyhow::Error> {
+pub async fn generate_server_ranks_image(handlebars: Handlebars<'_>, template_data: ServerScoreTemplate) -> Result<Vec<u8>, anyhow::Error> {
     generate_image(handlebars, "ServerRanks", &template_data).await
+}
+
+pub async fn generate_server_teamkillsbyhour_image(handlebars: Handlebars<'_>, template_data: ServerTeamkillsTemplate) -> Result<Vec<u8>, anyhow::Error> {
+    generate_image(handlebars, "ServerTeamkillsByHour", &template_data).await
 }
 
 async fn generate_image<T>(handlebars: Handlebars<'_>, name: &str, template_data: T) -> Result<Vec<u8>, anyhow::Error> 

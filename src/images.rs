@@ -1,6 +1,3 @@
-use std::fs::{self, File};
-use std::io::{Read};
-
 use handlebars::Handlebars;
 use oxipng::PngError;
 use serde::Serialize;
@@ -22,16 +19,16 @@ where
     Ok(compress_png(&buffer)?)
 }
 
-fn compress_png(buffer: &Vec<u8>) -> Result<Vec<u8>, PngError> {
+fn compress_png(buffer: &[u8]) -> Result<Vec<u8>, PngError> {
     let opts: oxipng::Options = Default::default();
     oxipng::optimize_from_memory(buffer, &opts)
 }
 
-fn get_file_as_byte_vec(filename: &String) -> Vec<u8> {
-    let mut f = File::open(&filename).expect("no file found");
-    let metadata = fs::metadata(&filename).expect("unable to read metadata");
-    let mut buffer = vec![0; metadata.len() as usize];
-    f.read(&mut buffer).expect("buffer overflow");
+// fn get_file_as_byte_vec(filename: &str) -> Vec<u8> {
+//     let mut f = File::open(&filename).expect("no file found");
+//     let metadata = fs::metadata(&filename).expect("unable to read metadata");
+//     let mut buffer = vec![0; metadata.len() as usize];
+//     f.read_exact(&mut buffer).expect("buffer overflow");
 
-    buffer
-}
+//     buffer
+// }

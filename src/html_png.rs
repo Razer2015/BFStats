@@ -33,7 +33,9 @@ impl UnSync for Html2Png {
                 };
 
                 let mut buffer = Vec::new();
-                image.read_to_end(&mut buffer);
+                if let Err(why) = image.read_to_end(&mut buffer) {
+                    println!("Error reading image to buffer: {}", why)
+                };
 
                 match fs::remove_file(&path) {
                     Err(why) => panic!("couldn't delete {}: {}", path.display(), why),
@@ -48,13 +50,17 @@ impl UnSync for Html2Png {
 }
 
 pub async fn html_to_png(html: String) -> anyhow::Result<Vec<u8>> {
-    let mut rng = rand::thread_rng();
     fs::create_dir_all("tempfiles")?;
-    let temp_path = format!("tempfiles\\{}.html", rng.gen::<u32>());
+    let temp_path = {
+        let mut rng = rand::thread_rng();
+        format!("tempfiles\\{}.html", rng.gen::<u32>())
+    };
     let path = Path::new(&temp_path);
     let mut file = File::create(&path)?;
-    let file = spawn_blocking(move || {
-        file.write(html.as_bytes());
+    let _file = spawn_blocking(move || {
+        if let Err(why) = file.write(html.as_bytes()) {
+            println!("Error writing html to file: {}", why)
+        };
         file
     }).await?;
     

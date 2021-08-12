@@ -4,20 +4,12 @@ mod models;
 mod images;
 mod html_png;
 
-use std::{env, fs::{self, File}, path::{Path, PathBuf}};
-use html_png::html_to_png;
-use oxipng::Options;
-use rand::prelude::*;
-
 use global_data::DatabasePool;
-use handlebars::{Handlebars, Helper, Output, RenderContext, RenderError};
-use models::ServerRankTemplate;
+use handlebars::Handlebars;
 use serde_json::Value;
 use serenity::{client::Context, model::interactions::application_command::ApplicationCommand};
 
 use stats::handle_top_interaction;
-use tempfile::NamedTempFile;
-use std::io::{self, Write};
 
 use serde_json::json;
 use dotenv::dotenv;
@@ -31,46 +23,28 @@ use serenity::{
     },
     prelude::*,
 };
-use sqlx::{MySql, MySqlPool, Pool};
-use wkhtmltopdf::{ImageApplication, ImageFormat};
-
-use crate::{global_data::HandlebarsContext, images::generate_server_ranks_image, models::PlayerStats};
-
+use sqlx::MySqlPool;
+use crate::global_data::HandlebarsContext;
 
 struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        
-
-        // let data = sqlx::query!(
-        //     "SELECT banner_user_id FROM permanent_bans WHERE guild_id = $1 AND user_id = $2",
-        //     guild_id.0 as i64,
-        //     member.user.id.0 as i64
-        // )
-        // .fetch_optional(&pool)
-        // .await
-        // .unwrap();
-
         if let Interaction::ApplicationCommand(command) = interaction {
             match command.data.name.as_str() {
                 "top" => {
-                    handle_top_interaction(ctx, command).await;
+                    if let Err(why) = handle_top_interaction(ctx, command).await {
+                        println!("Error: {}", why)
+                    };
+                },
+                "rank" => {
+                    // if let Err(why) = handle_top_interaction(ctx, command).await {
+                    //     println!("Error: {}", why)
+                    // };
                 },
                 _ => (),
             };
-
-            // if let Err(why) = command
-            //     .create_interaction_response(&ctx.http, |response| {
-            //         response
-            //             .kind(InteractionResponseType::ChannelMessageWithSource)
-            //             .interaction_response_data(|message| message.content(content))
-            //     })
-            //     .await
-            // {
-            //     println!("Cannot respond to slash command: {}", why);
-            // }
         }
     }
 
@@ -120,24 +94,6 @@ async fn add_guild_command(ctx: Context, command_json: &Value) -> Result<Applica
 //     }
 // }
 
-async fn get_stats(limit: i32, offset: i32, pool: Pool<MySql>) -> Result<Vec<PlayerStats>, sqlx::Error> {
-    sqlx::query_as!(
-        PlayerStats,
-        "SELECT soldiername, FORMAT(score, '#,0') AS score, globalrank as global_rank, kills, deaths, tks as teamkills, suicide as suicides, FORMAT(kills / deaths, 2) AS kdr, (@row_number:=@row_number+1)+? AS position
-        FROM tbl_playerstats AS ps
-        INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID
-        INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID
-        CROSS JOIN (SELECT @row_number:=0) AS t
-        ORDER BY rankScore
-        LIMIT ? OFFSET ?",
-        offset,
-        limit,
-        offset
-    )
-    .fetch_all(&pool)
-    .await
-}
-
 #[tokio::main]
 async fn main() {
     dotenv().ok();
@@ -150,30 +106,6 @@ async fn main() {
         .expect("Expected an application id in the environment")
         .parse()
         .expect("application id is not a valid id");
-
-
-    // let pool = MySqlPool::connect(&db_url).await.unwrap();
-    // let dir = env::current_dir().unwrap();
-    // let template_data = ServerRankTemplate {
-    //     base_path: format!("file:///{}/templates/", dir.into_os_string().into_string().unwrap().replace('\\', "/")),
-    //     players: get_stats(10, 0, pool).await.unwrap()
-    // };
-    
-    // let mut handlebars = Handlebars::new();
-    // handlebars
-    //     .register_template_file("ServerRanks", "./templates/ServerRanks.html")
-    //     .unwrap();
-
-    // let data = handlebars.render("ServerRanks", &template_data).unwrap();
-    // let img = html_to_png(data).await.unwrap();
-
-    // // let img = generate_server_ranks_image(handlebars, template_data)
-    // //     .unwrap();
-
-    // fs::write(Path::new("test_test.png"), &img).unwrap();
-
-    
-
 
     // Build our client.
     let mut client = Client::builder(token)

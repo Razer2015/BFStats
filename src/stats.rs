@@ -1,21 +1,17 @@
-use std::{borrow::Cow, env, fs, path::Path};
+use std::env;
 
 use serenity::{client::Context, http::AttachmentType, model::interactions::{
         application_command::ApplicationCommandInteraction, InteractionResponseType,
     }};
-use wkhtmltopdf::*;
 
-use crate::{get_stats, global_data::{DatabasePool, HandlebarsContext}, images::generate_server_ranks_image, models::{Count, PlayerStats, ServerRankTemplate}};
+use crate::{global_data::{DatabasePool, HandlebarsContext}, images::generate_server_ranks_image, models::{Count, PlayerStats, ServerRankTemplate}};
 
-pub async fn handle_top_interaction(ctx: Context, command: ApplicationCommandInteraction) {
-    if let Err(why) = command
+pub async fn handle_top_interaction(ctx: Context, command: ApplicationCommandInteraction) -> anyhow::Result<()> {
+    command
         .create_interaction_response(&ctx.http, |response| {
             response.kind(InteractionResponseType::DeferredChannelMessageWithSource)
         })
-        .await
-    {
-        println!("Cannot respond to slash command: {}", why);
-    }
+        .await?;
     
     let pool = {
         let data_read = &ctx.data.read().await;
@@ -29,30 +25,26 @@ pub async fn handle_top_interaction(ctx: Context, command: ApplicationCommandInt
 
     let total_players = sqlx::query_as!(Count, "SELECT COUNT(*) as count FROM tbl_playerstats")
         .fetch_one(&pool)
-        .await
-        .unwrap()
+        .await?
         .count;
 
-    let msg_id = match command
+    let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
             response.content(format!("Total players {}", total_players))
         })
-        .await {
-            Ok(msg) => msg.id.0,
-            Err(_) => 0
-        };
+        .await?.id.0;
 
-    // if let Err(why) = command
-    //     .edit_original_interaction_response(&ctx.http, |response| {
-    //         response.content(format!("Total players {}", total_players))
-    //     })
-    //     .await
-    // {
-    //     println!("Cannot respond to slash command: {}", why);
-    // }
+    let limit = command.data.options.iter()
+        .find(|elem| elem.name == "count")
+        .and_then(|opt| opt.value.as_ref())
+        .and_then(|num| num.as_i64())
+        .unwrap_or(10);
 
-    let limit: i32 = 10;
-    let offset: i32 = 0;
+    let offset = command.data.options.iter()
+        .find(|elem| elem.name == "offset")
+        .and_then(|opt| opt.value.as_ref())
+        .and_then(|num| num.as_i64())
+        .unwrap_or(0);
 
     let data = sqlx::query_as!(
         PlayerStats,
@@ -68,53 +60,22 @@ pub async fn handle_top_interaction(ctx: Context, command: ApplicationCommandInt
         offset
     )
     .fetch_all(&pool)
-    .await
-    .unwrap();
-
-    println!("Data: {:#?}", data);
+    .await?;
 
     let dir = env::current_dir().unwrap();
     let template_data = ServerRankTemplate {
         base_path: format!("file:///{}/templates/", dir.into_os_string().into_string().unwrap().replace('\\', "/")),
-        players: get_stats(10, 0, pool).await.unwrap()
+        players: data
     };
 
     let img = generate_server_ranks_image(handlebars, template_data)
-        .await
-        .unwrap();
+        .await?;
 
-    // fs::write(Path::new("test_final.png"), &img).unwrap();
-
-    if let Err(why) = command
+    command
         .edit_followup_message(&ctx.http, msg_id, |f| {
             f.content(format!("Total players {}", total_players)).add_file(AttachmentType::from((img.as_slice(), "top.png")))
         })
-        .await
-    {
-        println!("Cannot respond to slash command: {}", why);
-    }
+        .await?;
 
-    // if let Err(why) = command
-    //     .edit_original_interaction_response(&ctx.http, |response| {
-    //         response.create_embed(|e| {
-    //             for (_pos, ps) in data.iter().enumerate() {
-    //                 println!("{:#?}", ps);
-    //                 e.field(ps.soldiername.as_ref().unwrap(), "aaa", false);
-    //             }
-    //             e.colour(0x00ff00)
-    //         })
-    //     })
-    //     .await
-    // {
-    //     println!("Cannot respond to slash command: {}", why);
-    // }
-
-    // let data = sqlx::query!(
-    //     "SELECT banner_user_id FROM permanent_bans WHERE guild_id = $1 AND user_id = $2",
-    //     guild_id.0 as i64,
-    //     member.user.id.0 as i64
-    // )
-    // .fetch_optional(&pool)
-    // .await
-    // .unwrap();
+    Ok(())
 }

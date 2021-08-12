@@ -2,8 +2,10 @@ mod global_data;
 mod stats;
 mod models;
 mod images;
+mod html_png;
 
 use std::{env, fs::{self, File}, path::{Path, PathBuf}};
+use html_png::html_to_png;
 use oxipng::Options;
 use rand::prelude::*;
 
@@ -156,20 +158,21 @@ async fn main() {
     //     base_path: format!("file:///{}/templates/", dir.into_os_string().into_string().unwrap().replace('\\', "/")),
     //     players: get_stats(10, 0, pool).await.unwrap()
     // };
-
+    
     // let mut handlebars = Handlebars::new();
     // handlebars
     //     .register_template_file("ServerRanks", "./templates/ServerRanks.html")
     //     .unwrap();
 
-    // let img = generate_server_ranks_image(handlebars, template_data)
-    //     .unwrap();
+    // let data = handlebars.render("ServerRanks", &template_data).unwrap();
+    // let img = html_to_png(data).await.unwrap();
 
-    // fs::write(Path::new("test_final.png"), &img).unwrap();
+    // // let img = generate_server_ranks_image(handlebars, template_data)
+    // //     .unwrap();
+
+    // fs::write(Path::new("test_test.png"), &img).unwrap();
 
     
-    let image_app = ImageApplication::new()
-        .expect("Failed to init image application");
 
 
     // Build our client.

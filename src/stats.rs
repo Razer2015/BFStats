@@ -80,6 +80,7 @@ pub async fn handle_top_interaction(ctx: Context, command: ApplicationCommandInt
     };
 
     let img = generate_server_ranks_image(handlebars, template_data)
+        .await
         .unwrap();
 
     // fs::write(Path::new("test_final.png"), &img).unwrap();

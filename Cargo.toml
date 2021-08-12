@@ -22,3 +22,6 @@ handlebars = "4.1.1"
 wkhtmltopdf = "0.4.0"
 tempfile = "3.2.0"
 oxipng = "5.0.0"
+
+unasync = { git = "https://github.com/Kiiyya/unasync" }
+async_once = "0.2.1"

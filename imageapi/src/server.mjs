@@ -39,7 +39,7 @@ server.post('/api/html/render', async function (request, res) {
 })
 
 // Run the server!
-server.listen(3000, function (err, address) {
+server.listen(3000, '0.0.0.0', function (err, address) {
   if (err) {
     logger.error(err)
     process.exit(1)

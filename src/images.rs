@@ -9,6 +9,14 @@ pub async fn generate_server_ranks_image(handlebars: Handlebars<'_>, template_da
     generate_image(handlebars, "ServerRanks", &template_data).await
 }
 
+pub async fn generate_server_teamkills_image(handlebars: Handlebars<'_>, template_data: ServerScoreTemplate) -> Result<Vec<u8>, anyhow::Error> {
+    generate_image(handlebars, "ServerTeamkills", &template_data).await
+}
+
+pub async fn generate_server_suicides_image(handlebars: Handlebars<'_>, template_data: ServerScoreTemplate) -> Result<Vec<u8>, anyhow::Error> {
+    generate_image(handlebars, "ServerSuicides", &template_data).await
+}
+
 pub async fn generate_server_teamkillsbyhour_image(handlebars: Handlebars<'_>, template_data: ServerTeamkillsTemplate) -> Result<Vec<u8>, anyhow::Error> {
     generate_image(handlebars, "ServerTeamkillsByHour", &template_data).await
 }

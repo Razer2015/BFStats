@@ -469,6 +469,9 @@ name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "encoding_rs"
@@ -1657,6 +1660,7 @@ version = "1.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "336b10da19a12ad094b59d870ebde26a45402e5b470add4b5fd03c5048a32127"
 dependencies = [
+ "indexmap",
  "itoa",
  "ryu",
  "serde",
@@ -1677,7 +1681,7 @@ dependencies = [
 [[package]]
 name = "serenity"
 version = "0.10.8"
-source = "git+https://github.com/serenity-rs/serenity?rev=3ee7a4c171821b978f97a36471a701fa89d5e037#3ee7a4c171821b978f97a36471a701fa89d5e037"
+source = "git+https://github.com/serenity-rs/serenity?branch=next#4d431726f4eb2f29a040b83fb4a18a459427c1b2"
 dependencies = [
  "async-trait",
  "async-tungstenite",
@@ -1841,6 +1845,7 @@ dependencies = [
  "rand",
  "rsa",
  "rustls",
+ "serde",
  "sha-1 0.9.7",
  "sha2",
  "smallvec",
@@ -1866,9 +1871,12 @@ dependencies = [
  "either",
  "futures",
  "heck",
+ "hex",
  "once_cell",
  "proc-macro2",
  "quote",
+ "serde",
+ "serde_json",
  "sha2",
  "sqlx-core",
  "sqlx-rt",

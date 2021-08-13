@@ -24,7 +24,7 @@ use serenity::{
     prelude::*,
 };
 use sqlx::MySqlPool;
-use crate::{global_data::HandlebarsContext, stats::handle_teamkillsbyhour_interaction};
+use crate::{global_data::HandlebarsContext, stats::{handle_teamkillsbyhour_interaction, handle_top_suicides_interaction, handle_top_teamkills_interaction}};
 
 struct Handler;
 
@@ -47,12 +47,17 @@ impl EventHandler for Handler {
                             };
                         },
                         "type_teamkills" => {
-                            if let Err(why) = handle_top_interaction(ctx, command).await {
+                            if let Err(why) = handle_top_teamkills_interaction(ctx, command).await {
                                 println!("Error: {}", why)
                             };
                         },
                         "type_teamkillbyhour" => {
                             if let Err(why) = handle_teamkillsbyhour_interaction(ctx, command).await {
+                                println!("Error: {}", why)
+                            };
+                        },
+                        "type_suicides" => {
+                            if let Err(why) = handle_top_suicides_interaction(ctx, command).await {
                                 println!("Error: {}", why)
                             };
                         },
@@ -92,8 +97,12 @@ impl EventHandler for Handler {
                                     "value": "type_teamkills"
                                 },
                                 {
-                                    "name": "Teamkills by hour",
+                                    "name": "TKH (players with less than 1 day playtime excluded)",
                                     "value": "type_teamkillbyhour"
+                                },
+                                {
+                                    "name": "Suicides",
+                                    "value": "type_suicides"
                                 }
                             ]
                         },
@@ -165,6 +174,12 @@ async fn main() {
         let mut handlebars = Handlebars::new();
         handlebars
             .register_template_file("ServerRanks", "./templates/ServerRanks.html")
+            .unwrap();
+        handlebars
+            .register_template_file("ServerTeamkills", "./templates/ServerTeamkills.html")
+            .unwrap();
+        handlebars
+            .register_template_file("ServerSuicides", "./templates/ServerSuicides.html")
             .unwrap();
         handlebars
             .register_template_file("ServerTeamkillsByHour", "./templates/ServerTeamkillsByHour.html")

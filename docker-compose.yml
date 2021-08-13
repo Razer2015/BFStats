@@ -1,0 +1,11 @@
+version: '3.1'
+
+services:
+  bfstats:
+    image: xfilefin/bfstats
+    restart: always
+    environment:
+      DISCORD_TOKEN: <yourBotToken>
+      APPLICATION_ID: <youApplicationId>
+      GUILD_ID: <yourGuildId>
+      DATABASE_URL: mysql://<username>:<password>@<host>:<port>/<databaseName>

@@ -1,0 +1,19 @@
+{
+  "name": "imageapi",
+  "version": "1.0.0",
+  "description": "Used for converting HTML to PNG",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon ./src/server.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "xfileFIN",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^3.20.1",
+    "fastify-static": "^4.2.3",
+    "log4js": "^6.3.0",
+    "puppeteer": "^10.2.0"
+  }
+}

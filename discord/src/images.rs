@@ -2,31 +2,38 @@ use handlebars::Handlebars;
 use oxipng::PngError;
 use serde::Serialize;
 
-use crate::html_png::html_to_png;
 use crate::models::{ServerScoreTemplate, ServerTeamkillsTemplate};
 
 pub async fn generate_server_ranks_image(handlebars: Handlebars<'_>, template_data: ServerScoreTemplate) -> Result<Vec<u8>, anyhow::Error> {
-    generate_image(handlebars, "ServerRanks", &template_data).await
+    generate_image(handlebars, "ServerRanks", &template_data, "table").await
 }
 
 pub async fn generate_server_teamkills_image(handlebars: Handlebars<'_>, template_data: ServerScoreTemplate) -> Result<Vec<u8>, anyhow::Error> {
-    generate_image(handlebars, "ServerTeamkills", &template_data).await
+    generate_image(handlebars, "ServerTeamkills", &template_data, "table").await
 }
 
 pub async fn generate_server_suicides_image(handlebars: Handlebars<'_>, template_data: ServerScoreTemplate) -> Result<Vec<u8>, anyhow::Error> {
-    generate_image(handlebars, "ServerSuicides", &template_data).await
+    generate_image(handlebars, "ServerSuicides", &template_data, "table").await
 }
 
 pub async fn generate_server_teamkillsbyhour_image(handlebars: Handlebars<'_>, template_data: ServerTeamkillsTemplate) -> Result<Vec<u8>, anyhow::Error> {
-    generate_image(handlebars, "ServerTeamkillsByHour", &template_data).await
+    generate_image(handlebars, "ServerTeamkillsByHour", &template_data, "table").await
 }
 
-async fn generate_image<T>(handlebars: Handlebars<'_>, name: &str, template_data: T) -> Result<Vec<u8>, anyhow::Error> 
+async fn generate_image<T>(handlebars: Handlebars<'_>, name: &str, template_data: T, element_to_render: &str) -> Result<Vec<u8>, anyhow::Error> 
 where
         T: Serialize,
 {
     let html = handlebars.render(name, &template_data)?;
-    let buffer = html_to_png(html).await?;
+
+    let client = reqwest::Client::new();
+    let buffer = client.post(format!("{}api/html/render?element={}", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string()), element_to_render))
+        .body(html)
+        .header("Content-Type", "text/plain")
+        .send()
+        .await?
+        .bytes()
+        .await?;
 
     Ok(compress_png(&buffer)?)
 }

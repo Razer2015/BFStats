@@ -5,7 +5,6 @@
     <title></title>
 
     <base href="{{base_path}}">
-    <!-- <base href="file:///C:/Users/xfile/Documents/Visual%20Studio%20Code/Projects/BFStats/templates/"> -->
     <link rel="stylesheet" type="text/css" href="bf4.css">
     <link rel="stylesheet" type="text/css" href="bf4-static.css">
     <link rel="stylesheet" type="text/css" href="battlelog.css">
@@ -15,13 +14,13 @@
         <thead>
             <tr class="tr-color-allied">
                 <th colspan="2">
-                    Server Teamkills
+                    Teamkills By Hour
                 </th>
-                <th class="center">TKS</th>
                 <th class="center">Kills</th>
                 <th class="center">Deaths</th>
-                <th class="center">KDR</th>
-                <th class="center">Suicides</th>
+                <th class="center">TKS</th>
+                <th class="center">TKH</th>
+                <th class="center">Playtime</th>
                 <th class="last right">Score</th>
             </tr>
         </thead>
@@ -41,11 +40,11 @@
                         </div>
                     </div>
                 </td>
-                <td class="center">{{teamkills}}</td>
                 <td class="center">{{kills}}</td>
                 <td class="center">{{deaths}}</td>
-                <td class="center">{{kdr}}</td>
-                <td class="center">{{suicides}}</td>
+                <td class="center">{{teamkills}}</td>
+                <td class="center">{{teamkills_by_hour}}</td>
+                <td class="center">{{playtime}}</td>
                 <td class="last right">{{score}}</td>
             </tr>
             {{/each}}

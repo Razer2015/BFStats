@@ -1,5 +1,3 @@
-use std::env;
-
 use serenity::{client::Context, http::AttachmentType, model::interactions::{
         application_command::ApplicationCommandInteraction, InteractionResponseType,
     }};
@@ -63,9 +61,8 @@ pub async fn handle_top_interaction(ctx: Context, command: ApplicationCommandInt
     .fetch_all(&pool)
     .await?;
 
-    let dir = env::current_dir()?;
     let template_data = ServerScoreTemplate {
-        base_path: format!("file:///{}/templates/", dir.into_os_string().into_string().unwrap().replace('\\', "/")),
+        base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
         players: data
     };
 
@@ -143,9 +140,8 @@ pub async fn handle_top_teamkills_interaction(ctx: Context, command: Application
     .fetch_all(&pool)
     .await?;
 
-    let dir = env::current_dir()?;
     let template_data = ServerScoreTemplate {
-        base_path: format!("file:///{}/templates/", dir.into_os_string().into_string().unwrap().replace('\\', "/")),
+        base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
         players: data
     };
 
@@ -223,9 +219,8 @@ pub async fn handle_top_suicides_interaction(ctx: Context, command: ApplicationC
     .fetch_all(&pool)
     .await?;
 
-    let dir = env::current_dir()?;
     let template_data = ServerScoreTemplate {
-        base_path: format!("file:///{}/templates/", dir.into_os_string().into_string().unwrap().replace('\\', "/")),
+        base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
         players: data
     };
 
@@ -314,9 +309,8 @@ pub async fn handle_teamkillsbyhour_interaction(ctx: Context, command: Applicati
     .fetch_all(&pool)
     .await?;
 
-    let dir = env::current_dir()?;
     let template_data = ServerTeamkillsTemplate {
-        base_path: format!("file:///{}/templates/", dir.into_os_string().into_string().unwrap().replace('\\', "/")),
+        base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
         players: data
     };
 

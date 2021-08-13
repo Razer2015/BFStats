@@ -2,7 +2,6 @@ mod global_data;
 mod stats;
 mod models;
 mod images;
-mod html_png;
 
 use global_data::DatabasePool;
 use handlebars::Handlebars;

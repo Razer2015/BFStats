@@ -11,7 +11,7 @@ env:
 
 jobs:
   checkwebhookurl:
-    name: check if WEBHOOK_URL is set in github secrets
+    name: Check if WEBHOOK_URL is set in github secrets
     runs-on: ubuntu-latest
     outputs:
       is_WEBHOOK_URL_set: ${{ steps.checksecret_job.outputs.is_WEBHOOK_URL_set }}
@@ -25,7 +25,7 @@ jobs:
             echo "::set-output name=is_WEBHOOK_URL_set::${{ env.WEBHOOK_URL != '' }}"
   build_and_push_bfstats:
     needs: [checkwebhookurl]
-    name: Build bfstats docker image and push to Docker Hub
+    name: Build BFStats docker image and push to Docker Hub
     runs-on: ubuntu-latest
     steps:
       -
@@ -83,7 +83,7 @@ jobs:
   
   call_webhook:
     needs: [checkwebhookurl, build_and_push_bfstats]
-    name: Build docker images and push to Docker Hub
+    name: Call webhook if necessary
     runs-on: ubuntu-latest
     steps:
       -

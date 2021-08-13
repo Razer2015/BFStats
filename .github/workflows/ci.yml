@@ -71,7 +71,7 @@ jobs:
         with:
           builder: ${{ steps.builder_bfstats.outputs.name }}
           context: .
-          file: ./battle_fox/Dockerfile
+          file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/bfstats:${{ env.COMMIT_TAG }},${{ secrets.DOCKER_USERNAME }}/bfstats:latest
           cache-from: type=local,src=/tmp/.buildx-cache

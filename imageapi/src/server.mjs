@@ -20,22 +20,34 @@ server.register(fastifyStatic, {
 })
 
 server.post('/api/html/render', async function (request, res) {
-  logger.info("Handling html render request")
-  logger.debug(request.query)
+  try {
+    logger.info("Handling html render request")
+    logger.debug(request.query)
 
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-gpu",
+      ]
+    });
+    const page = await browser.newPage();
 
-  await page.setContent(request.body);
+    await page.setContent(request.body);
 
-  const content = await page.$(request.query?.element ?? "table");
-  const imageBuffer = await content.screenshot({ omitBackground: true });
+    const content = await page.$(request.query?.element ?? "table");
+    const imageBuffer = await content.screenshot({ omitBackground: true });
 
-  await page.close();
-  await browser.close();
+    await page.close();
+    await browser.close();
 
-  res.type('image/png')
-  res.send(imageBuffer)
+    res.type('image/png')
+    res.send(imageBuffer)
+  }
+  catch (err) {
+    logger.error(errr)
+    throw err
+  }
 })
 
 // Run the server!

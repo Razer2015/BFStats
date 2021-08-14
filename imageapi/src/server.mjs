@@ -45,7 +45,7 @@ server.post('/api/html/render', async function (request, res) {
     res.send(imageBuffer)
   }
   catch (err) {
-    logger.error(errr)
+    logger.error(err)
     throw err
   }
 })

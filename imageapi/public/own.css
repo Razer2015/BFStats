@@ -1,0 +1,80 @@
+/**
+ * General styles
+ */
+
+.darken {
+    background-color: rgba(7, 7, 7, 0.5);
+}
+
+.light-text {
+    color: #e8e8e8;
+}
+
+.divider {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border: 0;
+    color: #fff;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+
+/**
+ * Information box
+ */
+
+.info-container {
+    background-color: rgba(7, 7, 7, 0.7);
+    border-radius: 5px;
+    min-width: 180px;
+}
+
+.playtime {
+    background-color: rgba(7, 7, 7, 0.7);
+    border-radius: 5px;
+}
+
+
+/**
+ * Profile image component
+ */
+
+.profile-header-container {
+    margin: 0 auto;
+    text-align: center;
+}
+
+.profile-header-img {
+    padding: 20px 5px 10px;
+}
+
+.profile-header-img>img.img-circle {
+    width: 120px;
+    height: 120px;
+    border: 2px solid rgba(7, 7, 7, 0.5);
+}
+
+.profile-header {
+    margin-top: 43px;
+}
+
+.img-circle {
+    border-radius: 50%;
+}
+
+
+/**
+ * Ranking component
+ */
+
+.rank-icon-bg {
+    padding: 8px 10px 0px 10px;
+    border-radius: 27px;
+    background-color: rgba(7, 7, 7, 0.8);
+}
+
+.rank-label-container {
+    margin-top: -19px;
+    /* z-index: 1000; */
+    text-align: center;
+}

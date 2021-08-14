@@ -2,7 +2,7 @@ use handlebars::Handlebars;
 use oxipng::PngError;
 use serde::Serialize;
 
-use crate::models::{ServerScoreTemplate, ServerTeamkillsTemplate};
+use crate::models::{ServerRankTemplate, ServerScoreTemplate, ServerTeamkillsTemplate};
 
 pub async fn generate_server_ranks_image(handlebars: Handlebars<'_>, template_data: ServerScoreTemplate) -> Result<Vec<u8>, anyhow::Error> {
     generate_image(handlebars, "ServerRanks", &template_data, "table").await
@@ -18,6 +18,10 @@ pub async fn generate_server_suicides_image(handlebars: Handlebars<'_>, template
 
 pub async fn generate_server_teamkillsbyhour_image(handlebars: Handlebars<'_>, template_data: ServerTeamkillsTemplate) -> Result<Vec<u8>, anyhow::Error> {
     generate_image(handlebars, "ServerTeamkillsByHour", &template_data, "table").await
+}
+
+pub async fn generate_player_rank_image(handlebars: Handlebars<'_>, template_data: ServerRankTemplate) -> Result<Vec<u8>, anyhow::Error> {
+    generate_image(handlebars, "PlayerRank", &template_data, "%23image").await
 }
 
 async fn generate_image<T>(handlebars: Handlebars<'_>, name: &str, template_data: T, element_to_render: &str) -> Result<Vec<u8>, anyhow::Error> 

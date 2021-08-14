@@ -1,29 +1,33 @@
 mod global_data;
-mod stats;
-mod models;
 mod images;
+mod models;
+mod stats;
+mod battlelog;
 
 use global_data::DatabasePool;
 use handlebars::Handlebars;
 use serde_json::Value;
 use serenity::{client::Context, model::interactions::application_command::ApplicationCommand};
 
-use stats::handle_top_interaction;
+use stats::{handle_rank_interaction, handle_top_interaction};
 
-use serde_json::json;
 use dotenv::dotenv;
+use serde_json::json;
 
+use crate::{
+    global_data::HandlebarsContext,
+    stats::{
+        handle_teamkillsbyhour_interaction, handle_top_suicides_interaction,
+        handle_top_teamkills_interaction,
+    },
+};
 use serenity::{
     async_trait,
     http::Http,
-    model::{
-        gateway::Ready,
-        interactions::Interaction
-    },
+    model::{gateway::Ready, interactions::Interaction},
     prelude::*,
 };
 use sqlx::MySqlPool;
-use crate::{global_data::HandlebarsContext, stats::{handle_teamkillsbyhour_interaction, handle_top_suicides_interaction, handle_top_teamkills_interaction}};
 
 struct Handler;
 
@@ -33,42 +37,45 @@ impl EventHandler for Handler {
         if let Interaction::ApplicationCommand(command) = interaction {
             match command.data.name.as_str() {
                 "top" => {
-                    let score_type = command.data.options.iter()
+                    let score_type = command
+                        .data
+                        .options
+                        .iter()
                         .find(|elem| elem.name == "type")
                         .and_then(|opt| opt.value.as_ref())
                         .and_then(|num| num.as_str())
                         .unwrap_or("unknown");
-                    
+
                     match score_type {
                         "type_score" => {
                             if let Err(why) = handle_top_interaction(ctx, command).await {
                                 println!("Error: {}", why)
                             };
-                        },
+                        }
                         "type_teamkills" => {
                             if let Err(why) = handle_top_teamkills_interaction(ctx, command).await {
                                 println!("Error: {}", why)
                             };
-                        },
+                        }
                         "type_teamkillbyhour" => {
-                            if let Err(why) = handle_teamkillsbyhour_interaction(ctx, command).await {
+                            if let Err(why) = handle_teamkillsbyhour_interaction(ctx, command).await
+                            {
                                 println!("Error: {}", why)
                             };
-                        },
+                        }
                         "type_suicides" => {
                             if let Err(why) = handle_top_suicides_interaction(ctx, command).await {
                                 println!("Error: {}", why)
                             };
-                        },
+                        }
                         _ => println!("Unknown score type: {}", score_type),
                     };
-                    
-                },
+                }
                 "rank" => {
-                    // if let Err(why) = handle_top_interaction(ctx, command).await {
-                    //     println!("Error: {}", why)
-                    // };
-                },
+                    if let Err(why) = handle_rank_interaction(ctx, command).await {
+                        println!("Error: {}", why)
+                    };
+                }
                 _ => (),
             };
         }
@@ -77,54 +84,82 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
 
-        if let Err(err) = add_guild_command(ctx, &json!({
-                    "name": "top",
-                    "description": "Command to get top players in the server.",
-                    "options": [
-                        {
-                            "name": "type",
-                            "description": "The type of stats",
-                            "type": 3,
-                            "required": true,
-                            "choices": [
-                                {
-                                    "name": "Score",
-                                    "value": "type_score"
-                                },
-                                {
-                                    "name": "Teamkills",
-                                    "value": "type_teamkills"
-                                },
-                                {
-                                    "name": "TKH (players with less than 1 day playtime excluded)",
-                                    "value": "type_teamkillbyhour"
-                                },
-                                {
-                                    "name": "Suicides",
-                                    "value": "type_suicides"
-                                }
-                            ]
-                        },
-                        {
-                            "type": 4,
-                            "name": "count",
-                            "description": "How many to show? Default 10 and max 20.",
-                            "required": false
-                        },
-                        {
-                            "type": 4,
-                            "name": "offset",
-                            "description": "From which offset to show? Default 0.",
-                            "required": false
-                        }
-                    ]
-                })).await {
+        if let Err(err) = add_guild_command(
+            ctx.clone(),
+            &json!({
+                "name": "top",
+                "description": "Command to get top players in the server.",
+                "options": [
+                    {
+                        "name": "type",
+                        "description": "The type of stats",
+                        "type": 3,
+                        "required": true,
+                        "choices": [
+                            {
+                                "name": "Score",
+                                "value": "type_score"
+                            },
+                            {
+                                "name": "Teamkills",
+                                "value": "type_teamkills"
+                            },
+                            {
+                                "name": "TKH (players with less than 1 day playtime excluded)",
+                                "value": "type_teamkillbyhour"
+                            },
+                            {
+                                "name": "Suicides",
+                                "value": "type_suicides"
+                            }
+                        ]
+                    },
+                    {
+                        "type": 4,
+                        "name": "count",
+                        "description": "How many to show? Default 10 and max 20.",
+                        "required": false
+                    },
+                    {
+                        "type": 4,
+                        "name": "offset",
+                        "description": "From which offset to show? Default 0.",
+                        "required": false
+                    }
+                ]
+            }),
+        )
+        .await
+        {
+            println!("Error adding guild command: {}", err)
+        }
+
+        if let Err(err) = add_guild_command(
+            ctx.clone(),
+            &json!({
+                "name": "rank",
+                "description": "Command to get your rank in the server.",
+                "options": [
+                    {
+                        "type": 3,
+                        "name": "soldiername",
+                        "description": "Name of the soldier (can be partial but must have only one match).",
+                        "required": true
+                    }
+                ]
+            }),
+        )
+        .await
+        {
             println!("Error adding guild command: {}", err)
         }
     }
 }
 
-async fn add_guild_command(ctx: Context, command_json: &Value) -> Result<ApplicationCommand, SerenityError> {
+async fn add_guild_command(
+    ctx: Context,
+    command_json: &Value,
+) -> Result<ApplicationCommand, SerenityError> {
     let guild_id: u64 = dotenv::var("GUILD_ID")
         .expect("Expected an guild id in the environment")
         .parse()
@@ -139,7 +174,7 @@ async fn add_guild_command(ctx: Context, command_json: &Value) -> Result<Applica
 //         .parse()
 //         .expect("guild id is not a valid id");
 
-//     if let Ok(cmd) = add_guild_command(ctx.clone(), &command_json).await {           
+//     if let Ok(cmd) = add_guild_command(ctx.clone(), &command_json).await {
 //         let _ = Http::edit_guild_application_command_permissions(&ctx.http, guild_id, cmd.id.0, permissions_json).await;
 //     }
 // }
@@ -149,7 +184,8 @@ async fn main() {
     dotenv().ok();
 
     let token = dotenv::var("DISCORD_TOKEN").expect("Expected a token in the environment");
-    let db_url = dotenv::var("DATABASE_URL").expect("Expected a database connection string in the environment");
+    let db_url = dotenv::var("DATABASE_URL")
+        .expect("Expected a database connection string in the environment");
 
     // The Application Id is usually the Bot User Id.
     let application_id: u64 = dotenv::var("APPLICATION_ID")
@@ -181,7 +217,13 @@ async fn main() {
             .register_template_file("ServerSuicides", "./templates/ServerSuicides.html")
             .unwrap();
         handlebars
-            .register_template_file("ServerTeamkillsByHour", "./templates/ServerTeamkillsByHour.html")
+            .register_template_file("PlayerRank", "./templates/PlayerRank.html")
+            .unwrap();
+        handlebars
+            .register_template_file(
+                "ServerTeamkillsByHour",
+                "./templates/ServerTeamkillsByHour.html",
+            )
             .unwrap();
 
         data.insert::<HandlebarsContext>(handlebars);

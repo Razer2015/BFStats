@@ -11189,6 +11189,8 @@ ul.box-list li.totals {
     @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
       .rank_icon.small {
         background-image: url(profile/warsaw/gamedata/rank_icon/small@2x.png); } }
+    .rank_icon.big {
+        background-image: url(profile/warsaw/gamedata/rank_icon/small@2x.png); }
     .rank_icon.small.r0 {
       background-position: 0 0; }
     .rank_icon.small.r1 {

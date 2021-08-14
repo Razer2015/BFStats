@@ -15,14 +15,12 @@ lazy_static = "1.4.0"
 
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1.0.64" }
+serde-aux = { version = "2.2.0" }
 
 sqlx = { version = "0.5", features = [ "runtime-tokio-rustls", "mysql", "time", "offline" ] }
 
 reqwest = { version = "0.11.4", default-features = false, features = ["json", "rustls-tls", "blocking"] }
+http = { version = "0.2.4" }
 
 handlebars = "4.1.1"
-tempfile = "3.2.0"
 oxipng = "5.0.0"
-
-unasync = { git = "https://github.com/Kiiyya/unasync" }
-async_once = "0.2.1"

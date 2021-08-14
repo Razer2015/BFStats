@@ -1,17 +1,25 @@
-use serenity::{client::Context, http::AttachmentType, model::interactions::{
+use rand::Rng;
+use serenity::{
+    client::Context,
+    http::AttachmentType,
+    model::interactions::{
         application_command::ApplicationCommandInteraction, InteractionResponseType,
-    }};
+    },
+};
 
-use crate::{global_data::{DatabasePool, HandlebarsContext}, images::{generate_server_ranks_image, generate_server_suicides_image, generate_server_teamkills_image, generate_server_teamkillsbyhour_image}, models::{Count, PlayerScoreStats, PlayerTeamkillStats, ServerScoreTemplate, ServerTeamkillsTemplate}};
+use crate::{battlelog::search_user, global_data::{DatabasePool, HandlebarsContext}, images::{generate_player_rank_image, generate_server_ranks_image, generate_server_suicides_image, generate_server_teamkills_image, generate_server_teamkillsbyhour_image}, models::{Count, PlayerData, PlayerScoreStats, PlayerTeamkillStats, ServerRankTemplate, ServerScoreTemplate, ServerTeamkillsTemplate}};
 
 // TODO: Lots of duplicate code in this file
-pub async fn handle_top_interaction(ctx: Context, command: ApplicationCommandInteraction) -> anyhow::Result<()> {
+pub async fn handle_top_interaction(
+    ctx: Context,
+    command: ApplicationCommandInteraction,
+) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
             response.kind(InteractionResponseType::DeferredChannelMessageWithSource)
         })
         .await?;
-    
+
     let pool = {
         let data_read = &ctx.data.read().await;
         data_read.get::<DatabasePool>().unwrap().clone()
@@ -27,7 +35,10 @@ pub async fn handle_top_interaction(ctx: Context, command: ApplicationCommandInt
         .await?
         .count;
 
-    let mut limit = command.data.options.iter()
+    let mut limit = command
+        .data
+        .options
+        .iter()
         .find(|elem| elem.name == "count")
         .and_then(|opt| opt.value.as_ref())
         .and_then(|num| num.as_i64())
@@ -36,14 +47,21 @@ pub async fn handle_top_interaction(ctx: Context, command: ApplicationCommandInt
     limit = if limit < 1 { 10 } else { limit };
     limit = if limit > 20 { 20 } else { limit };
 
-    let mut offset = command.data.options.iter()
+    let mut offset = command
+        .data
+        .options
+        .iter()
         .find(|elem| elem.name == "offset")
         .and_then(|opt| opt.value.as_ref())
         .and_then(|num| num.as_i64())
         .unwrap_or(0);
 
     offset = if offset < 0 { 0 } else { offset };
-    offset = if offset >= total_players { total_players - limit } else { offset };
+    offset = if offset >= total_players {
+        total_players - limit
+    } else {
+        offset
+    };
 
     let data = sqlx::query_as!(
         PlayerScoreStats,
@@ -62,35 +80,47 @@ pub async fn handle_top_interaction(ctx: Context, command: ApplicationCommandInt
     .await?;
 
     let template_data = ServerScoreTemplate {
-        base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
-        players: data
+        base_path: format!(
+            "{}public/",
+            dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())
+        ),
+        players: data,
     };
 
-    let img = generate_server_ranks_image(handlebars, template_data)
-        .await?;
+    let img = generate_server_ranks_image(handlebars, template_data).await?;
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
             response.content(format!("Generating Score image..."))
         })
-        .await?.id.0;
+        .await?
+        .id
+        .0;
 
     command
         .edit_followup_message(&ctx.http, msg_id, |f| {
-            f.content(format!("**Top Score** for positions {}-{}", offset + 1, offset + &limit)).add_file(AttachmentType::from((img.as_slice(), "top_score.png")))
+            f.content(format!(
+                "**Top Score** for positions {}-{}",
+                offset + 1,
+                offset + &limit
+            ))
+            .add_file(AttachmentType::from((img.as_slice(), "top_score.png")))
         })
         .await?;
 
     Ok(())
 }
 
-pub async fn handle_top_teamkills_interaction(ctx: Context, command: ApplicationCommandInteraction) -> anyhow::Result<()> {
+pub async fn handle_top_teamkills_interaction(
+    ctx: Context,
+    command: ApplicationCommandInteraction,
+) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
             response.kind(InteractionResponseType::DeferredChannelMessageWithSource)
         })
         .await?;
-    
+
     let pool = {
         let data_read = &ctx.data.read().await;
         data_read.get::<DatabasePool>().unwrap().clone()
@@ -106,7 +136,10 @@ pub async fn handle_top_teamkills_interaction(ctx: Context, command: Application
         .await?
         .count;
 
-    let mut limit = command.data.options.iter()
+    let mut limit = command
+        .data
+        .options
+        .iter()
         .find(|elem| elem.name == "count")
         .and_then(|opt| opt.value.as_ref())
         .and_then(|num| num.as_i64())
@@ -115,14 +148,21 @@ pub async fn handle_top_teamkills_interaction(ctx: Context, command: Application
     limit = if limit < 1 { 10 } else { limit };
     limit = if limit > 20 { 20 } else { limit };
 
-    let mut offset = command.data.options.iter()
+    let mut offset = command
+        .data
+        .options
+        .iter()
         .find(|elem| elem.name == "offset")
         .and_then(|opt| opt.value.as_ref())
         .and_then(|num| num.as_i64())
         .unwrap_or(0);
 
     offset = if offset < 0 { 0 } else { offset };
-    offset = if offset >= total_players { total_players - limit } else { offset };
+    offset = if offset >= total_players {
+        total_players - limit
+    } else {
+        offset
+    };
 
     let data = sqlx::query_as!(
         PlayerScoreStats,
@@ -141,35 +181,47 @@ pub async fn handle_top_teamkills_interaction(ctx: Context, command: Application
     .await?;
 
     let template_data = ServerScoreTemplate {
-        base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
-        players: data
+        base_path: format!(
+            "{}public/",
+            dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())
+        ),
+        players: data,
     };
 
-    let img = generate_server_teamkills_image(handlebars, template_data)
-        .await?;
+    let img = generate_server_teamkills_image(handlebars, template_data).await?;
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
             response.content(format!("Generating Teamkills image..."))
         })
-        .await?.id.0;
+        .await?
+        .id
+        .0;
 
     command
         .edit_followup_message(&ctx.http, msg_id, |f| {
-            f.content(format!("**Top Teamkills** for positions {}-{}", offset + 1, offset + &limit)).add_file(AttachmentType::from((img.as_slice(), "top_teamkills.png")))
+            f.content(format!(
+                "**Top Teamkills** for positions {}-{}",
+                offset + 1,
+                offset + &limit
+            ))
+            .add_file(AttachmentType::from((img.as_slice(), "top_teamkills.png")))
         })
         .await?;
 
     Ok(())
 }
 
-pub async fn handle_top_suicides_interaction(ctx: Context, command: ApplicationCommandInteraction) -> anyhow::Result<()> {
+pub async fn handle_top_suicides_interaction(
+    ctx: Context,
+    command: ApplicationCommandInteraction,
+) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
             response.kind(InteractionResponseType::DeferredChannelMessageWithSource)
         })
         .await?;
-    
+
     let pool = {
         let data_read = &ctx.data.read().await;
         data_read.get::<DatabasePool>().unwrap().clone()
@@ -185,7 +237,10 @@ pub async fn handle_top_suicides_interaction(ctx: Context, command: ApplicationC
         .await?
         .count;
 
-    let mut limit = command.data.options.iter()
+    let mut limit = command
+        .data
+        .options
+        .iter()
         .find(|elem| elem.name == "count")
         .and_then(|opt| opt.value.as_ref())
         .and_then(|num| num.as_i64())
@@ -194,14 +249,21 @@ pub async fn handle_top_suicides_interaction(ctx: Context, command: ApplicationC
     limit = if limit < 1 { 10 } else { limit };
     limit = if limit > 20 { 20 } else { limit };
 
-    let mut offset = command.data.options.iter()
+    let mut offset = command
+        .data
+        .options
+        .iter()
         .find(|elem| elem.name == "offset")
         .and_then(|opt| opt.value.as_ref())
         .and_then(|num| num.as_i64())
         .unwrap_or(0);
 
     offset = if offset < 0 { 0 } else { offset };
-    offset = if offset >= total_players { total_players - limit } else { offset };
+    offset = if offset >= total_players {
+        total_players - limit
+    } else {
+        offset
+    };
 
     let data = sqlx::query_as!(
         PlayerScoreStats,
@@ -220,35 +282,47 @@ pub async fn handle_top_suicides_interaction(ctx: Context, command: ApplicationC
     .await?;
 
     let template_data = ServerScoreTemplate {
-        base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
-        players: data
+        base_path: format!(
+            "{}public/",
+            dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())
+        ),
+        players: data,
     };
 
-    let img = generate_server_suicides_image(handlebars, template_data)
-        .await?;
+    let img = generate_server_suicides_image(handlebars, template_data).await?;
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
             response.content(format!("Generating Suicides image..."))
         })
-        .await?.id.0;
+        .await?
+        .id
+        .0;
 
     command
         .edit_followup_message(&ctx.http, msg_id, |f| {
-            f.content(format!("**Top Suicides** for positions {}-{}", offset + 1, offset + &limit)).add_file(AttachmentType::from((img.as_slice(), "top_suicides.png")))
+            f.content(format!(
+                "**Top Suicides** for positions {}-{}",
+                offset + 1,
+                offset + &limit
+            ))
+            .add_file(AttachmentType::from((img.as_slice(), "top_suicides.png")))
         })
         .await?;
 
     Ok(())
 }
 
-pub async fn handle_teamkillsbyhour_interaction(ctx: Context, command: ApplicationCommandInteraction) -> anyhow::Result<()> {
+pub async fn handle_teamkillsbyhour_interaction(
+    ctx: Context,
+    command: ApplicationCommandInteraction,
+) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
             response.kind(InteractionResponseType::DeferredChannelMessageWithSource)
         })
         .await?;
-    
+
     let pool = {
         let data_read = &ctx.data.read().await;
         data_read.get::<DatabasePool>().unwrap().clone()
@@ -259,12 +333,18 @@ pub async fn handle_teamkillsbyhour_interaction(ctx: Context, command: Applicati
         data_read.get::<HandlebarsContext>().unwrap().clone()
     };
 
-    let total_players = sqlx::query_as!(Count, "SELECT COUNT(*) as count FROM tbl_playerstats WHERE playtime > 86400")
-        .fetch_one(&pool)
-        .await?
-        .count;
+    let total_players = sqlx::query_as!(
+        Count,
+        "SELECT COUNT(*) as count FROM tbl_playerstats WHERE playtime > 86400"
+    )
+    .fetch_one(&pool)
+    .await?
+    .count;
 
-    let mut limit = command.data.options.iter()
+    let mut limit = command
+        .data
+        .options
+        .iter()
         .find(|elem| elem.name == "count")
         .and_then(|opt| opt.value.as_ref())
         .and_then(|num| num.as_i64())
@@ -273,14 +353,21 @@ pub async fn handle_teamkillsbyhour_interaction(ctx: Context, command: Applicati
     limit = if limit < 1 { 10 } else { limit };
     limit = if limit > 20 { 20 } else { limit };
 
-    let mut offset = command.data.options.iter()
+    let mut offset = command
+        .data
+        .options
+        .iter()
         .find(|elem| elem.name == "offset")
         .and_then(|opt| opt.value.as_ref())
         .and_then(|num| num.as_i64())
         .unwrap_or(0);
 
     offset = if offset < 0 { 0 } else { offset };
-    offset = if offset >= total_players { total_players - limit } else { offset };
+    offset = if offset >= total_players {
+        total_players - limit
+    } else {
+        offset
+    };
 
     let data = sqlx::query_as!(
         PlayerTeamkillStats,
@@ -310,22 +397,171 @@ pub async fn handle_teamkillsbyhour_interaction(ctx: Context, command: Applicati
     .await?;
 
     let template_data = ServerTeamkillsTemplate {
-        base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
-        players: data
+        base_path: format!(
+            "{}public/",
+            dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())
+        ),
+        players: data,
     };
 
-    let img = generate_server_teamkillsbyhour_image(handlebars, template_data)
-        .await?;
+    let img = generate_server_teamkillsbyhour_image(handlebars, template_data).await?;
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
             response.content(format!("Generating TKH image..."))
         })
-        .await?.id.0;
+        .await?
+        .id
+        .0;
 
     command
         .edit_followup_message(&ctx.http, msg_id, |f| {
-            f.content(format!("**Top Teamkills By Hour** for positions {}-{}", offset + 1, offset + &limit)).add_file(AttachmentType::from((img.as_slice(), "top_tkh.png")))
+            f.content(format!(
+                "**Top Teamkills By Hour** for positions {}-{}",
+                offset + 1,
+                offset + &limit
+            ))
+            .add_file(AttachmentType::from((img.as_slice(), "top_tkh.png")))
+        })
+        .await?;
+
+    Ok(())
+}
+
+pub async fn handle_rank_interaction(
+    ctx: Context,
+    command: ApplicationCommandInteraction,
+) -> anyhow::Result<()> {
+    command
+        .create_interaction_response(&ctx.http, |response| {
+            response.kind(InteractionResponseType::DeferredChannelMessageWithSource)
+        })
+        .await?;
+
+    let pool = {
+        let data_read = &ctx.data.read().await;
+        data_read.get::<DatabasePool>().unwrap().clone()
+    };
+
+    let handlebars = {
+        let data_read = &ctx.data.read().await;
+        data_read.get::<HandlebarsContext>().unwrap().clone()
+    };
+
+    let total_players = sqlx::query_as!(Count, "SELECT COUNT(*) as count FROM tbl_playerstats")
+        .fetch_one(&pool)
+        .await?
+        .count;
+
+    let soldiername = command
+        .data
+        .options
+        .iter()
+        .find(|elem| elem.name == "soldiername")
+        .and_then(|opt| opt.value.as_ref())
+        .and_then(|num| num.as_str())
+        .unwrap_or("");
+
+    let soldiers = sqlx::query_as!(
+        PlayerData,
+            "SELECT soldiername, 
+                clantag as clan_tag,
+                pd.playerid as player_id,
+                FORMAT(score, '#,0') AS score,
+                globalrank as global_rank,
+                kills,
+                deaths,
+                rankscore as rank_score,
+                wins,
+                losses,
+                headshots,
+                FORMAT(highscore, '#,0') AS highscore,
+                deathstreak,
+                killstreak,
+                tks as teamkills,
+                suicide as suicides,
+                FORMAT(kills / deaths, 2) AS kdr,
+                CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime,
+                rounds
+            FROM tbl_playerstats AS ps
+            INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID
+            INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID
+            WHERE soldiername LIKE ?",
+            format!("%{}%", soldiername)
+        )
+        .fetch_all(&pool)
+        .await?;
+
+    if soldiers.len() != 1 {
+        command
+            .edit_original_interaction_response(&ctx.http, |response| {
+                response.content(format!(
+                    "Too many or no matches, try with more specific soldierName."
+                ))
+            })
+            .await?;
+
+        return Ok(());
+    }
+
+    let msg_id = command
+        .edit_original_interaction_response(&ctx.http, |response| {
+            response.content(format!("Fetching the soldier from Battlelog..."))
+        })
+        .await?.id.0;
+
+    let db_soldier = soldiers.get(0).unwrap();
+    let soldier_name = db_soldier.soldiername.as_ref().unwrap();
+    let soldier = search_user(&soldier_name).await;
+    let profile_image = match soldier {
+        Ok(user) => user.user.gravatar_md5.clone().map_or(
+            "https://eaassets-a.akamaihd.net/battlelog/defaultavatars/default-avatar-204.png".to_string(),
+            |md5| format!("https://secure.gravatar.com/avatar/{}?s=204&d=https://eaassets-a.akamaihd.net/battlelog/defaultavatars/default-avatar-204.png", md5)
+        ),
+        _ => "https://eaassets-a.akamaihd.net/battlelog/defaultavatars/default-avatar-204.png".to_string(),
+    };
+
+    let bg_index = {
+        let mut rng = rand::thread_rng();
+        rng.gen_range(1..11)
+    };
+    let template_data = ServerRankTemplate {
+        base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
+        total_players: total_players,
+        profile_image_url: profile_image,
+        bg_index: bg_index,
+        clan_tag: db_soldier.clan_tag.to_owned(),
+        soldiername: db_soldier.soldiername.to_owned(),
+        rank_score: db_soldier.rank_score,
+        score: db_soldier.score.to_owned(),
+        global_rank: db_soldier.global_rank,
+        kills: db_soldier.kills,
+        deaths: db_soldier.deaths,
+        teamkills: db_soldier.teamkills,
+        suicides: db_soldier.suicides,
+        wins: db_soldier.wins,
+        losses: db_soldier.losses,
+        headshots: db_soldier.headshots,
+        highscore: db_soldier.highscore.to_owned(),
+        killstreak: db_soldier.killstreak,
+        deathstreak: db_soldier.deathstreak,
+        kdr: db_soldier.kdr.to_owned(),
+        playtime: db_soldier.playtime.to_owned(),
+        rounds: db_soldier.rounds
+    };
+
+    command
+        .edit_followup_message(&ctx.http, msg_id, |f| {
+            f.content(format!("Generating Rank image..."))
+        })
+        .await?;
+
+    let img = generate_player_rank_image(handlebars, template_data)
+        .await?;
+
+    command
+        .edit_followup_message(&ctx.http, msg_id, |f| {
+            f.content(format!("**Rank** for **{}**", db_soldier.soldiername.as_ref().unwrap_or(&"Unknown".to_string()))).add_file(AttachmentType::from((img.as_slice(), "player_rank.png")))
         })
         .await?;
 

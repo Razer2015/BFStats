@@ -14,13 +14,10 @@ use stats::{handle_rank_interaction, handle_top_interaction};
 use dotenv::dotenv;
 use serde_json::json;
 
-use crate::{
-    global_data::HandlebarsContext,
-    stats::{
+use crate::{global_data::HandlebarsContext, models::Server, stats::{
         handle_teamkillsbyhour_interaction, handle_top_suicides_interaction,
         handle_top_teamkills_interaction,
-    },
-};
+    }};
 use serenity::{
     async_trait,
     http::Http,
@@ -134,24 +131,71 @@ impl EventHandler for Handler {
             println!("Error adding guild command: {}", err)
         }
 
-        if let Err(err) = add_guild_command(
-            ctx.clone(),
-            &json!({
-                "name": "rank",
-                "description": "Command to get your rank in the server.",
-                "options": [
-                    {
-                        "type": 3,
-                        "name": "soldiername",
-                        "description": "Name of the soldier (can be partial but must have only one match).",
-                        "required": true
-                    }
-                ]
-            }),
-        )
-        .await
-        {
-            println!("Error adding guild command: {}", err)
+        // Rank command
+        let pool = {
+            let data_read = &ctx.data.read().await;
+            data_read.get::<DatabasePool>().unwrap().clone()
+        };
+
+        let servers = sqlx::query_as!(Server, "SELECT serverid as server_id, servername as server_name FROM tbl_server")
+            .fetch_all(&pool)
+            .await;
+
+        if servers.is_ok() && servers.as_ref().unwrap().len() > 1 { // Multiple servers
+            
+            let choices = servers.unwrap().iter().map(|server| json!( {
+                "name": server.server_name.as_ref().unwrap_or(&"Unknown".to_string()).trim(),
+                "value": server.server_id
+            }))
+            .collect::<Vec<Value>>();
+
+            if let Err(err) = add_guild_command(
+                ctx.clone(),
+                &json!({
+                    "name": "rank",
+                    "description": "Command to get your rank in the server.",
+                    "options": [
+                        {
+                            "name": "server",
+                            "description": "Which server you want the stats from?",
+                            "type": 4,
+                            "required": true,
+                            "choices": choices
+                        },
+                        {
+                            "type": 3,
+                            "name": "soldiername",
+                            "description": "Name of the soldier (can be partial but must have only one match).",
+                            "required": true
+                        }
+                    ]
+                }),
+            )
+            .await
+            {
+                println!("Error adding guild command: {}", err)
+            }
+        }
+        else { // One server
+            if let Err(err) = add_guild_command(
+                ctx.clone(),
+                &json!({
+                    "name": "rank",
+                    "description": "Command to get your rank in the server.",
+                    "options": [
+                        {
+                            "type": 3,
+                            "name": "soldiername",
+                            "description": "Name of the soldier (can be partial but must have only one match).",
+                            "required": true
+                        }
+                    ]
+                }),
+            )
+            .await
+            {
+                println!("Error adding guild command: {}", err)
+            }
         }
     }
 }

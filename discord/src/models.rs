@@ -72,6 +72,7 @@ pub struct ServerTeamkillsTemplate {
 #[derive(Debug, Serialize)]
 pub struct ServerRankTemplate {
     pub base_path: String,
+    pub servername: Option<String>,
     pub total_players: i64,
     pub bg_index: u8,
     pub clan_tag: Option<String>,
@@ -95,7 +96,11 @@ pub struct ServerRankTemplate {
     pub rounds: u32,
 }
 
-
+#[derive(Debug, Serialize)]
+pub struct Server {
+    pub server_id: u16,
+    pub server_name: Option<String>
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

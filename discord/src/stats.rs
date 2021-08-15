@@ -7,7 +7,7 @@ use serenity::{
     },
 };
 
-use crate::{battlelog::search_user, global_data::{DatabasePool, HandlebarsContext}, images::{generate_player_rank_image, generate_server_ranks_image, generate_server_suicides_image, generate_server_teamkills_image, generate_server_teamkillsbyhour_image}, models::{Count, PlayerData, PlayerScoreStats, PlayerTeamkillStats, ServerRankTemplate, ServerScoreTemplate, ServerTeamkillsTemplate}};
+use crate::{battlelog::search_user, global_data::{DatabasePool, HandlebarsContext}, images::{generate_player_rank_image, generate_server_ranks_image, generate_server_suicides_image, generate_server_teamkills_image, generate_server_teamkillsbyhour_image}, models::{Count, PlayerData, PlayerScoreStats, PlayerTeamkillStats, Server, ServerRankTemplate, ServerScoreTemplate, ServerTeamkillsTemplate}};
 
 // TODO: Lots of duplicate code in this file
 pub async fn handle_top_interaction(
@@ -448,7 +448,41 @@ pub async fn handle_rank_interaction(
         data_read.get::<HandlebarsContext>().unwrap().clone()
     };
 
-    let total_players = sqlx::query_as!(Count, "SELECT COUNT(*) as count FROM tbl_playerstats")
+    let server = match command
+        .data
+        .options
+        .iter()
+        .find(|elem| elem.name == "server")
+        .and_then(|opt| opt.value.as_ref())
+        .and_then(|num| num.as_i64()) {
+            Some(serverid) => {
+                sqlx::query_as!(Server, "SELECT serverid as server_id, servername as server_name FROM tbl_server WHERE serverid = ?", serverid)
+                    .fetch_one(&pool)
+                    .await
+            },
+            None => {
+                sqlx::query_as!(Server, "SELECT serverid as server_id, servername as server_name FROM tbl_server LIMIT 1")
+                    .fetch_one(&pool)
+                    .await
+            }
+        };
+
+    if let Err(why) = server {
+        println!("Couldn't find the server {}", why);
+
+        command
+        .edit_original_interaction_response(&ctx.http, |response| {
+            response.content(format!(
+                "Error finding the server."
+            ))
+        })
+        .await?;
+
+        return Ok(());
+    };
+
+    let server = server.unwrap();
+    let total_players = sqlx::query_as!(Count, "SELECT COUNT(*) as count FROM tbl_server_player WHERE serverid = ?", server.server_id)
         .fetch_one(&pool)
         .await?
         .count;
@@ -464,7 +498,8 @@ pub async fn handle_rank_interaction(
 
     let soldiers = sqlx::query_as!(
         PlayerData,
-            "SELECT soldiername, 
+            "SELECT
+                soldiername,
                 clantag as clan_tag,
                 pd.playerid as player_id,
                 FORMAT(score, '#,0') AS score,
@@ -482,12 +517,62 @@ pub async fn handle_rank_interaction(
                 suicide as suicides,
                 FORMAT(kills / deaths, 2) AS kdr,
                 CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime,
-                rounds
-            FROM tbl_playerstats AS ps
-            INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID
-            INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID
-            WHERE soldiername LIKE ?",
-            format!("%{}%", soldiername)
+                rounds 
+            FROM
+                tbl_playerstats AS ps 
+                INNER JOIN
+                tbl_server_player AS sp 
+                ON ps.StatsID = sp.StatsID 
+                INNER JOIN
+                tbl_playerdata AS pd 
+                ON sp.PlayerID = pd.PlayerID 
+            WHERE
+                soldiername LIKE ? AND serverid = ?
+            UNION
+            SELECT
+                soldiername,
+                clantag as clan_tag,
+                pd.playerid as player_id,
+                FORMAT(score, '#,0') AS score,
+                globalrank as global_rank,
+                kills,
+                deaths,
+                rankscore as rank_score,
+                wins,
+                losses,
+                headshots,
+                FORMAT(highscore, '#,0') AS highscore,
+                deathstreak,
+                killstreak,
+                tks as teamkills,
+                suicide as suicides,
+                FORMAT(kills / deaths, 2) AS kdr,
+                CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime,
+                rounds 
+            FROM
+                tbl_playerstats AS ps 
+                INNER JOIN
+                tbl_server_player AS sp 
+                ON ps.StatsID = sp.StatsID 
+                INNER JOIN
+                tbl_playerdata AS pd 
+                ON sp.PlayerID = pd.PlayerID 
+            WHERE
+                NOT EXISTS 
+                (
+                SELECT
+                    * 
+                FROM
+                    tbl_playerdata 
+                WHERE
+                    soldiername LIKE ?
+                )
+                AND soldiername LIKE ? AND serverid = ? LIMIT 2",
+            soldiername,
+            server.server_id,
+            soldiername,
+            format!("%{}%", soldiername),
+            server.server_id
         )
         .fetch_all(&pool)
         .await?;
@@ -496,7 +581,7 @@ pub async fn handle_rank_interaction(
         command
             .edit_original_interaction_response(&ctx.http, |response| {
                 response.content(format!(
-                    "Too many or no matches, try with more specific soldierName."
+                    "Player with the given name was not found from this server."
                 ))
             })
             .await?;
@@ -527,6 +612,7 @@ pub async fn handle_rank_interaction(
     };
     let template_data = ServerRankTemplate {
         base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
+        servername: server.server_name,
         total_players: total_players,
         profile_image_url: profile_image,
         bg_index: bg_index,

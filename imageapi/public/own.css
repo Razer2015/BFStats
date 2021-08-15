@@ -36,6 +36,25 @@
 
 
 /**
+ * Author
+ */
+
+.author {
+    font-size: 12px;
+    color: #bbb;
+}
+
+
+/**
+ * Server header
+ */
+
+.servername {
+    font-size: 12px;
+}
+
+
+/**
  * Profile image component
  */
 

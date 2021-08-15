@@ -14,115 +14,125 @@
 <body>
     <div class="container">
         <div class="row">
-            <div id="image" class="col-auto" style="background-image: url('{{base_path}}images/playerrank_bg_{{bg_index}}.jpg'); background-size: cover;min-width: 720px;">
+            <div id="image" class="col-auto" style="background-image: url('{{base_path}}images/playerrank_bg_{{bg_index}}.jpg'); background-size: cover;width: 720px;">
                 <div class="row">
-                    <div class="col align-self-center">
-                        <div class="row justify-content-center">
-                            <!-- Left container -->
-                            <div class="col-auto align-self-center">
-                                <div class="row info-container m-1 p-2">
-                                    <div class="col">
-                                        <div class="text-start light-text">
-                                            <span>Kills</span>
-                                        </div>
-                                        <div class="text-start text-white fw-bold">
-                                            <span>{{kills}}</span>
+                    <div class="col">
+                        <div class="row h-100">
+                            <div class="d-flex flex-column justify-content-between p-0">
+                                <div class="p-2 servername darken text-center text-white fw-bold">{{servername}}</div>
+                                <div>
+                                    <div class="container p-2">
+                                        <div class="row justify-content-center">
+                                            <!-- Left container -->
+                                            <div class="col-auto align-self-center">
+                                                <div class="row info-container m-1 p-2">
+                                                    <div class="col">
+                                                        <div class="text-start light-text">
+                                                            <span>Kills</span>
+                                                        </div>
+                                                        <div class="text-start text-white fw-bold">
+                                                            <span>{{kills}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row info-container m-1 p-2">
+                                                    <div class="col">
+                                                        <div class="text-start light-text">
+                                                            <span>Wins</span>
+                                                        </div>
+                                                        <div class="text-start text-white fw-bold">
+                                                            <span>{{wins}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row info-container m-1 p-2">
+                                                    <div class="col">
+                                                        <div class="text-start light-text">
+                                                            <span>Killstreak</span>
+                                                        </div>
+                                                        <div class="text-start text-white fw-bold">
+                                                            <span>{{killstreak}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row info-container m-1 p-2">
+                                                    <div class="col">
+                                                        <div class="text-start light-text">
+                                                            <span>Teamkills</span>
+                                                        </div>
+                                                        <div class="text-start text-white fw-bold">
+                                                            <span>{{teamkills}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row info-container m-1 p-2">
+                                                    <div class="col">
+                                                        <div class="text-start light-text">
+                                                            <span>Score</span>
+                                                        </div>
+                                                        <div class="text-start text-white fw-bold">
+                                                            <span>{{score}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Right container -->
+                                            <div class="col-auto align-self-center">
+                                                <div class="row info-container m-1 p-2">
+                                                    <div class="col">
+                                                        <div class="text-start light-text">
+                                                            <span>Deaths</span>
+                                                        </div>
+                                                        <div class="text-start text-white fw-bold">
+                                                            <span>{{deaths}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row info-container m-1 p-2">
+                                                    <div class="col">
+                                                        <div class="text-start light-text">
+                                                            <span>Losses</span>
+                                                        </div>
+                                                        <div class="text-start text-white fw-bold">
+                                                            <span>{{losses}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row info-container m-1 p-2">
+                                                    <div class="col">
+                                                        <div class="text-start light-text">
+                                                            <span>Deathstreak</span>
+                                                        </div>
+                                                        <div class="text-start text-white fw-bold">
+                                                            <span>{{deathstreak}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row info-container m-1 p-2">
+                                                    <div class="col">
+                                                        <div class="text-start light-text">
+                                                            <span>Suicides</span>
+                                                        </div>
+                                                        <div class="text-start text-white fw-bold">
+                                                            <span>{{suicides}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row info-container m-1 p-2">
+                                                    <div class="col">
+                                                        <div class="text-start light-text">
+                                                            <span>Highscore</span>
+                                                        </div>
+                                                        <div class="text-start text-white fw-bold">
+                                                            <span>{{highscore}}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row info-container m-1 p-2">
-                                    <div class="col">
-                                        <div class="text-start light-text">
-                                            <span>Wins</span>
-                                        </div>
-                                        <div class="text-start text-white fw-bold">
-                                            <span>{{wins}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row info-container m-1 p-2">
-                                    <div class="col">
-                                        <div class="text-start light-text">
-                                            <span>Killstreak</span>
-                                        </div>
-                                        <div class="text-start text-white fw-bold">
-                                            <span>{{killstreak}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row info-container m-1 p-2">
-                                    <div class="col">
-                                        <div class="text-start light-text">
-                                            <span>Teamkills</span>
-                                        </div>
-                                        <div class="text-start text-white fw-bold">
-                                            <span>{{teamkills}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row info-container m-1 p-2">
-                                    <div class="col">
-                                        <div class="text-start light-text">
-                                            <span>Score</span>
-                                        </div>
-                                        <div class="text-start text-white fw-bold">
-                                            <span>{{score}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Right container -->
-                            <div class="col-auto align-self-center">
-                                <div class="row info-container m-1 p-2">
-                                    <div class="col">
-                                        <div class="text-start light-text">
-                                            <span>Deaths</span>
-                                        </div>
-                                        <div class="text-start text-white fw-bold">
-                                            <span>{{deaths}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row info-container m-1 p-2">
-                                    <div class="col">
-                                        <div class="text-start light-text">
-                                            <span>Losses</span>
-                                        </div>
-                                        <div class="text-start text-white fw-bold">
-                                            <span>{{losses}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row info-container m-1 p-2">
-                                    <div class="col">
-                                        <div class="text-start light-text">
-                                            <span>Deathstreak</span>
-                                        </div>
-                                        <div class="text-start text-white fw-bold">
-                                            <span>{{deathstreak}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row info-container m-1 p-2">
-                                    <div class="col">
-                                        <div class="text-start light-text">
-                                            <span>Suicides</span>
-                                        </div>
-                                        <div class="text-start text-white fw-bold">
-                                            <span>{{suicides}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row info-container m-1 p-2">
-                                    <div class="col">
-                                        <div class="text-start light-text">
-                                            <span>Highscore</span>
-                                        </div>
-                                        <div class="text-start text-white fw-bold">
-                                            <span>{{highscore}}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div class="ps-2 author fst-italic">BFStats by xfileFIN (bit.ly/statsbf)</div>
                             </div>
                         </div>
                     </div>

@@ -258,8 +258,8 @@
       ]
     }
   },
-  "8da30f2a8dfb760bb7874b0155d54b39ade971c003aecda60001ea9bde897002": {
-    "query": "SELECT soldiername, \n                clantag as clan_tag,\n                pd.playerid as player_id,\n                FORMAT(score, '#,0') AS score,\n                globalrank as global_rank,\n                kills,\n                deaths,\n                rankscore as rank_score,\n                wins,\n                losses,\n                headshots,\n                FORMAT(highscore, '#,0') AS highscore,\n                deathstreak,\n                killstreak,\n                tks as teamkills,\n                suicide as suicides,\n                FORMAT(kills / deaths, 2) AS kdr,\n                CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime,\n                rounds\n            FROM tbl_playerstats AS ps\n            INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID\n            INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID\n            WHERE soldiername LIKE ?",
+  "55124ef5ea6b8e9ce9283fb51cf4314f0164f0075ac567db0f9007783306e2c1": {
+    "query": "SELECT\n                soldiername,\n                clantag as clan_tag,\n                pd.playerid as player_id,\n                FORMAT(score, '#,0') AS score,\n                globalrank as global_rank,\n                kills,\n                deaths,\n                rankscore as rank_score,\n                wins,\n                losses,\n                headshots,\n                FORMAT(highscore, '#,0') AS highscore,\n                deathstreak,\n                killstreak,\n                tks as teamkills,\n                suicide as suicides,\n                FORMAT(kills / deaths, 2) AS kdr,\n                CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime,\n                rounds \n            FROM\n                tbl_playerstats AS ps \n                INNER JOIN\n                tbl_server_player AS sp \n                ON ps.StatsID = sp.StatsID \n                INNER JOIN\n                tbl_playerdata AS pd \n                ON sp.PlayerID = pd.PlayerID \n            WHERE\n                soldiername LIKE ? AND serverid = ?\n            UNION\n            SELECT\n                soldiername,\n                clantag as clan_tag,\n                pd.playerid as player_id,\n                FORMAT(score, '#,0') AS score,\n                globalrank as global_rank,\n                kills,\n                deaths,\n                rankscore as rank_score,\n                wins,\n                losses,\n                headshots,\n                FORMAT(highscore, '#,0') AS highscore,\n                deathstreak,\n                killstreak,\n                tks as teamkills,\n                suicide as suicides,\n                FORMAT(kills / deaths, 2) AS kdr,\n                CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime,\n                rounds \n            FROM\n                tbl_playerstats AS ps \n                INNER JOIN\n                tbl_server_player AS sp \n                ON ps.StatsID = sp.StatsID \n                INNER JOIN\n                tbl_playerdata AS pd \n                ON sp.PlayerID = pd.PlayerID \n            WHERE\n                NOT EXISTS \n                (\n                SELECT\n                    * \n                FROM\n                    tbl_playerdata \n                WHERE\n                    soldiername LIKE ?\n                )\n                AND soldiername LIKE ? AND serverid = ? LIMIT 2",
     "describe": {
       "columns": [
         {
@@ -492,7 +492,7 @@
         }
       ],
       "parameters": {
-        "Right": 1
+        "Right": 5
       },
       "nullable": [
         true,
@@ -514,6 +514,82 @@
         true,
         true,
         false
+      ]
+    }
+  },
+  "869239080ea926b1449f3909a951136b2247e7ef997c191910cc81182710f873": {
+    "query": "SELECT serverid as server_id, servername as server_name FROM tbl_server LIMIT 1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "server_id",
+          "type_info": {
+            "type": "Short",
+            "flags": {
+              "bits": 547
+            },
+            "char_set": 63,
+            "max_size": 5
+          }
+        },
+        {
+          "ordinal": 1,
+          "name": "server_name",
+          "type_info": {
+            "type": "VarString",
+            "flags": {
+              "bits": 0
+            },
+            "char_set": 224,
+            "max_size": 800
+          }
+        }
+      ],
+      "parameters": {
+        "Right": 0
+      },
+      "nullable": [
+        false,
+        true
+      ]
+    }
+  },
+  "a23d0351b86e9275d21f3372389a0a18f92437f0a500a4e938350840e7b43f66": {
+    "query": "SELECT serverid as server_id, servername as server_name FROM tbl_server WHERE serverid = ?",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "server_id",
+          "type_info": {
+            "type": "Short",
+            "flags": {
+              "bits": 547
+            },
+            "char_set": 63,
+            "max_size": 5
+          }
+        },
+        {
+          "ordinal": 1,
+          "name": "server_name",
+          "type_info": {
+            "type": "VarString",
+            "flags": {
+              "bits": 0
+            },
+            "char_set": 224,
+            "max_size": 800
+          }
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        false,
+        true
       ]
     }
   },
@@ -823,6 +899,69 @@
         false,
         true,
         true
+      ]
+    }
+  },
+  "dc2e669af9feb139e689a0934f7b65ceac0d541033f6a6d82b7447798d6db501": {
+    "query": "SELECT serverid as server_id, servername as server_name FROM tbl_server",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "server_id",
+          "type_info": {
+            "type": "Short",
+            "flags": {
+              "bits": 547
+            },
+            "char_set": 63,
+            "max_size": 5
+          }
+        },
+        {
+          "ordinal": 1,
+          "name": "server_name",
+          "type_info": {
+            "type": "VarString",
+            "flags": {
+              "bits": 0
+            },
+            "char_set": 224,
+            "max_size": 800
+          }
+        }
+      ],
+      "parameters": {
+        "Right": 0
+      },
+      "nullable": [
+        false,
+        true
+      ]
+    }
+  },
+  "f539f2f9e06dd26b4c314bcfc86f1faec9fddf9584de371598f961ba1f9ecf24": {
+    "query": "SELECT COUNT(*) as count FROM tbl_server_player WHERE serverid = ?",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "count",
+          "type_info": {
+            "type": "LongLong",
+            "flags": {
+              "bits": 129
+            },
+            "char_set": 63,
+            "max_size": 21
+          }
+        }
+      ],
+      "parameters": {
+        "Right": 1
+      },
+      "nullable": [
+        false
       ]
     }
   },

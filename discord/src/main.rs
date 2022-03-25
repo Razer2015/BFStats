@@ -2,6 +2,7 @@ mod global_data;
 mod images;
 mod models;
 mod stats;
+mod vip;
 mod battlelog;
 
 use global_data::DatabasePool;
@@ -10,6 +11,7 @@ use serde_json::Value;
 use serenity::{client::Context, model::interactions::application_command::ApplicationCommand};
 
 use stats::{handle_rank_interaction, handle_top_interaction};
+use vip::{handle_vip_interaction};
 
 use dotenv::dotenv;
 use serde_json::json;
@@ -73,6 +75,11 @@ impl EventHandler for Handler {
                         println!("Error: {}", why)
                     };
                 }
+                "vip" => {
+                    if let Err(why) = handle_vip_interaction(ctx, command).await {
+                        println!("Error: {}", why)
+                    };
+                }
                 _ => (),
             };
         }
@@ -80,6 +87,24 @@ impl EventHandler for Handler {
 
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
+
+        // Fetch currently registered guild commands
+        let commands = get_guild_commands(ctx.clone()).await.unwrap();
+        println!("Registered GUILD commands ({})", commands.len());
+        for command in &commands {
+            println!("Command {} with id {}", command.name, command.id);
+        }
+        println!("");
+        //delete_guild_command(ctx.clone(), 956964456947150858).await;
+
+        // Fetch currently registered global commands
+        let commands = get_global_commands(ctx.clone()).await.unwrap();
+        println!("Registered GLOBAL commands ({})", commands.len());
+        for command in &commands {
+            println!("Command {} with id {}", command.name, command.id);
+        }
+        println!("");
+        //delete_global_command(ctx.clone(), 956964456947150858).await;
 
         if let Err(err) = add_guild_command(
             ctx.clone(),
@@ -144,7 +169,7 @@ impl EventHandler for Handler {
         if servers.is_ok() && servers.as_ref().unwrap().len() > 1 { // Multiple servers
             
             let choices = servers.unwrap().iter().map(|server| json!( {
-                "name": server.server_name.as_ref().unwrap_or(&"Unknown".to_string()).trim(),
+                "name": no_space(server.server_name.as_ref().unwrap_or(&"Unknown".to_string()).to_string()).trim(),
                 "value": server.server_id
             }))
             .collect::<Vec<Value>>();
@@ -197,9 +222,28 @@ impl EventHandler for Handler {
                 println!("Error adding guild command: {}", err)
             }
         }
+
+        // VIP command
+        if let Err(err) = add_global_command(
+            ctx.clone(),
+            &json!({
+                "name": "vip",
+                "description": "Command to get your VIP information in the server.",
+                "options": [ ]
+            }),
+        )
+        .await
+        {
+            println!("Error adding guild command: {}", err)
+        }
     }
 }
 
+fn no_space(x : String) -> String{
+    x.replace(" ", "-")
+}
+
+#[allow(dead_code)]
 async fn add_guild_command(
     ctx: Context,
     command_json: &Value,
@@ -210,6 +254,54 @@ async fn add_guild_command(
         .expect("guild id is not a valid id");
 
     Http::create_guild_application_command(&ctx.http, guild_id, command_json).await
+}
+
+#[allow(dead_code)]
+async fn add_global_command(
+    ctx: Context,
+    command_json: &Value,
+) -> Result<ApplicationCommand, SerenityError> {
+    Http::create_global_application_command(&ctx.http, command_json).await
+}
+
+#[allow(dead_code)]
+async fn get_guild_commands(
+    ctx: Context,
+) -> Result<Vec<ApplicationCommand>, SerenityError> {
+    let guild_id: u64 = dotenv::var("GUILD_ID")
+        .expect("Expected an guild id in the environment")
+        .parse()
+        .expect("guild id is not a valid id");
+
+    Http::get_guild_application_commands(&ctx.http, guild_id).await
+}
+
+#[allow(dead_code)]
+async fn get_global_commands(
+    ctx: Context,
+) -> Result<Vec<ApplicationCommand>, SerenityError> {
+    Http::get_global_application_commands(&ctx.http).await
+}
+
+#[allow(dead_code)]
+async fn delete_guild_command(
+    ctx: Context,
+    command_id: u64
+) -> Result<(), SerenityError> {
+    let guild_id: u64 = dotenv::var("GUILD_ID")
+        .expect("Expected an guild id in the environment")
+        .parse()
+        .expect("guild id is not a valid id");
+
+    Http::delete_guild_application_command(&ctx.http, guild_id, command_id).await
+}
+
+#[allow(dead_code)]
+async fn delete_global_command(
+    ctx: Context,
+    command_id: u64
+) -> Result<(), SerenityError> {
+    Http::delete_global_application_command(&ctx.http, command_id).await
 }
 
 // async fn add_guild_command_with_permissions(ctx: Context, command_json: &Value, permissions_json: &Value) {

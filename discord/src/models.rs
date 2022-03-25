@@ -7,6 +7,21 @@ pub struct Count {
 }
 
 #[derive(Debug, Serialize)]
+pub struct PlayerVip {
+    pub id: i32,
+    pub gametype: String,
+    pub servergroup: String,
+    pub playername: Option<String>,
+    pub timestamp: Option<i64>,
+    pub status: String,
+    pub admin: Option<String>,
+    pub comment: Option<String>,
+    pub guid: Option<String>,
+    pub discord_id: Option<i64>,
+    pub active: i32
+}
+
+#[derive(Debug, Serialize)]
 pub struct PlayerScoreStats {
     pub position: Option<f64>,
     pub soldiername: Option<String>,

@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 dotenv = "0.15"
-serenity = { git = "https://github.com/serenity-rs/serenity", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "unstable_discord_api"] }
+serenity = { git = "https://github.com/Razer2015/serenity.git", branch = "followup-attachments", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "unstable_discord_api"] }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 anyhow = "1.0.42"
 rand = "0.8.4"

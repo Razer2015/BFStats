@@ -64,7 +64,16 @@ pub async fn handle_top_interaction(
 
     let data = sqlx::query_as!(
         PlayerScoreStats,
-        "SELECT soldiername, FORMAT(score, '#,0') AS score, globalrank as global_rank, kills, deaths, tks as teamkills, suicide as suicides, FORMAT(kills / deaths, 2) AS kdr, (@row_number:=@row_number+1)+? AS position
+        "SELECT soldiername, 
+            FORMAT(score, '#,0') AS score, 
+            globalrank as global_rank, 
+            kills, 
+            deaths, 
+            tks as teamkills, 
+            suicide as suicides, 
+            FORMAT(kills / deaths, 2) AS kdr, 
+            (@row_number:=@row_number+1)+? AS position, 
+            CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime
         FROM tbl_playerstats AS ps
         INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID
         INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID
@@ -165,7 +174,16 @@ pub async fn handle_top_teamkills_interaction(
 
     let data = sqlx::query_as!(
         PlayerScoreStats,
-        "SELECT soldiername, FORMAT(score, '#,0') AS score, globalrank as global_rank, kills, deaths, tks as teamkills, suicide as suicides, FORMAT(kills / deaths, 2) AS kdr, (@row_number:=@row_number+1)+? AS position
+        "SELECT soldiername, 
+            FORMAT(score, '#,0') AS score, 
+            globalrank as global_rank, 
+            kills, 
+            deaths, 
+            tks as teamkills, 
+            suicide as suicides, 
+            FORMAT(kills / deaths, 2) AS kdr, 
+            (@row_number:=@row_number+1)+? AS position, 
+            CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime
         FROM tbl_playerstats AS ps
         INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID
         INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID
@@ -266,7 +284,16 @@ pub async fn handle_top_suicides_interaction(
 
     let data = sqlx::query_as!(
         PlayerScoreStats,
-        "SELECT soldiername, FORMAT(score, '#,0') AS score, globalrank as global_rank, kills, deaths, tks as teamkills, suicide as suicides, FORMAT(kills / deaths, 2) AS kdr, (@row_number:=@row_number+1)+? AS position
+        "SELECT soldiername, 
+            FORMAT(score, '#,0') AS score, 
+            globalrank as global_rank, 
+            kills, 
+            deaths, 
+            tks as teamkills, 
+            suicide as suicides, 
+            FORMAT(kills / deaths, 2) AS kdr, 
+            (@row_number:=@row_number+1)+? AS position,
+            CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime
         FROM tbl_playerstats AS ps
         INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID
         INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID

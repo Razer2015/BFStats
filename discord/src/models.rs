@@ -32,6 +32,7 @@ pub struct PlayerScoreStats {
     pub teamkills: u32,
     pub suicides: u32,
     pub kdr: Option<String>,
+    pub playtime: Option<String>,
 }
 
 #[derive(Debug, Serialize)]

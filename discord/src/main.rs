@@ -347,6 +347,7 @@ async fn main() {
         data.insert::<DatabasePool>(pool);
 
         let mut handlebars = Handlebars::new();
+        handlebars.register_script_helper_file("to_int", "./templates/script_helpers/to_int.rhai").unwrap();
         handlebars
             .register_template_file("ServerRanks", "./templates/ServerRanks.html")
             .unwrap();

@@ -90,7 +90,7 @@ pub async fn handle_top_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Generating Score image..."))
+            response.content("Generating Score image...".to_string())
         })
         .await?
         .id
@@ -191,7 +191,7 @@ pub async fn handle_top_teamkills_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Generating Teamkills image..."))
+            response.content("Generating Teamkills image...".to_string())
         })
         .await?
         .id
@@ -292,7 +292,7 @@ pub async fn handle_top_suicides_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Generating Suicides image..."))
+            response.content("Generating Suicides image...".to_string())
         })
         .await?
         .id
@@ -407,7 +407,7 @@ pub async fn handle_teamkillsbyhour_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Generating TKH image..."))
+            response.content("Generating TKH image...".to_string())
         })
         .await?
         .id
@@ -471,9 +471,7 @@ pub async fn handle_rank_interaction(
 
         command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!(
-                "Error finding the server."
-            ))
+            response.content("Error finding the server.".to_string())
         })
         .await?;
 
@@ -579,9 +577,7 @@ pub async fn handle_rank_interaction(
     if soldiers.len() != 1 {
         command
             .edit_original_interaction_response(&ctx.http, |response| {
-                response.content(format!(
-                    "Player with the given name was not found from this server."
-                ))
+                response.content("Player with the given name was not found from this server.".to_string())
             })
             .await?;
 
@@ -590,15 +586,15 @@ pub async fn handle_rank_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Fetching the soldier from Battlelog..."))
+            response.content("Fetching the soldier from Battlelog...".to_string())
         })
         .await?.id.0;
 
     let db_soldier = soldiers.get(0).unwrap();
     let soldier_name = db_soldier.soldiername.as_ref().unwrap();
-    let soldier = search_user(&soldier_name).await;
+    let soldier = search_user(soldier_name).await;
     let profile_image = match soldier {
-        Ok(user) => user.user.gravatar_md5.clone().map_or(
+        Ok(user) => user.user.gravatar_md5.map_or(
             "https://eaassets-a.akamaihd.net/battlelog/defaultavatars/default-avatar-204.png".to_string(),
             |md5| format!("https://secure.gravatar.com/avatar/{}?s=204&d=https://eaassets-a.akamaihd.net/battlelog/defaultavatars/default-avatar-204.png", md5)
         ),
@@ -612,9 +608,9 @@ pub async fn handle_rank_interaction(
     let template_data = ServerRankTemplate {
         base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
         servername: server.server_name,
-        total_players: total_players,
+        total_players,
         profile_image_url: profile_image,
-        bg_index: bg_index,
+        bg_index,
         clan_tag: db_soldier.clan_tag.to_owned(),
         soldiername: db_soldier.soldiername.to_owned(),
         rank_score: db_soldier.rank_score,
@@ -637,7 +633,7 @@ pub async fn handle_rank_interaction(
 
     command
         .edit_followup_message(&ctx.http, msg_id, |f| {
-            f.content(format!("Generating Rank image..."))
+            f.content("Generating Rank image...".to_string())
         })
         .await?;
 

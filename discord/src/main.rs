@@ -98,7 +98,7 @@ impl EventHandler for Handler {
         for command in &commands {
             println!("Command {} with id {}", command.name, command.id);
         }
-        println!("");
+        println!();
         //delete_guild_command(ctx.clone(), 956964456947150858).await;
 
         // Fetch currently registered global commands
@@ -107,7 +107,7 @@ impl EventHandler for Handler {
         for command in &commands {
             println!("Command {} with id {}", command.name, command.id);
         }
-        println!("");
+        println!();
         //delete_global_command(ctx.clone(), 956964456947150858).await;
 
         if let Err(err) = add_guild_command(
@@ -244,7 +244,7 @@ impl EventHandler for Handler {
 }
 
 fn no_space(x : String) -> String{
-    x.replace(" ", "-")
+    x.replace(' ', "-")
 }
 
 #[allow(dead_code)]

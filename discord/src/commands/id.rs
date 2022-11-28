@@ -18,7 +18,7 @@ pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) {
         .as_ref()
         .expect("Expected user object");
 
-    let mut content;
+    let content;
     if let CommandDataOptionValue::User(user, _member) = option {
         content = format!("{}'s id is {}", user.tag(), user.id);
     } else {

@@ -32,7 +32,7 @@ pub async fn handle_vip_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Fetching data..."))
+            response.content("Fetching data...".to_string())
         })
         .await?
         .id
@@ -62,7 +62,7 @@ pub async fn handle_vip_interaction(
     .await?;
 
     let utc: DateTime<Utc> = Utc::now();
-    if vips.len() == 0 {
+    if vips.is_empty() {
         dm_chan
             .send_message(&ctx, |m| {
                 m.embed(|e| e

@@ -1,10 +1,9 @@
 use rand::Rng;
 use serenity::{
     client::Context,
-    http::AttachmentType,
-    model::interactions::{
+    model::{interactions::{
         application_command::ApplicationCommandInteraction, InteractionResponseType,
-    },
+    }, prelude::AttachmentType},
 };
 
 use crate::{battlelog::search_user, global_data::{DatabasePool, HandlebarsContext}, images::{generate_player_rank_image, generate_server_ranks_image, generate_server_suicides_image, generate_server_teamkills_image, generate_server_teamkillsbyhour_image}, models::{Count, PlayerData, PlayerScoreStats, PlayerTeamkillStats, Server, ServerRankTemplate, ServerScoreTemplate, ServerTeamkillsTemplate}};

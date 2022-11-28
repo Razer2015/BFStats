@@ -9,3 +9,6 @@ services:
       APPLICATION_ID: <youApplicationId>
       GUILD_ID: <yourGuildId>
       DATABASE_URL: mysql://<username>:<password>@<host>:<port>/<databaseName>
+  imageapi:
+    image: xfilefin/bfstats-imageapi:latest
+    restart: always

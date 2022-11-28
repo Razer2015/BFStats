@@ -4,6 +4,7 @@ mod models;
 mod stats;
 mod vip;
 mod battlelog;
+mod commands;
 
 use global_data::DatabasePool;
 use handlebars::Handlebars;
@@ -35,6 +36,9 @@ impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
             match command.data.name.as_str() {
+                "id" => {
+                    commands::id::run(ctx, &command);
+                },
                 "top" => {
                     let score_type = command
                         .data
@@ -330,7 +334,7 @@ async fn main() {
         .expect("application id is not a valid id");
 
     // Build our client.
-    let mut client = Client::builder(token)
+    let mut client = Client::builder(token, GatewayIntents::empty())
         .event_handler(Handler)
         .application_id(application_id)
         .await

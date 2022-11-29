@@ -13,7 +13,7 @@ use crate::{
 
 pub async fn handle_vip_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {

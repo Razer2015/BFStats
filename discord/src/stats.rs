@@ -1,9 +1,7 @@
 use rand::Rng;
 use serenity::{
     client::Context,
-    model::{interactions::{
-        application_command::ApplicationCommandInteraction, InteractionResponseType,
-    }, prelude::AttachmentType},
+    model::{prelude::{AttachmentType, interaction::{application_command::ApplicationCommandInteraction, InteractionResponseType}}},
 };
 
 use crate::{battlelog::search_user, global_data::{DatabasePool, HandlebarsContext}, images::{generate_player_rank_image, generate_server_ranks_image, generate_server_suicides_image, generate_server_teamkills_image, generate_server_teamkillsbyhour_image}, models::{Count, PlayerData, PlayerScoreStats, PlayerTeamkillStats, Server, ServerRankTemplate, ServerScoreTemplate, ServerTeamkillsTemplate}};
@@ -11,7 +9,7 @@ use crate::{battlelog::search_user, global_data::{DatabasePool, HandlebarsContex
 // TODO: Lots of duplicate code in this file
 pub async fn handle_top_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
@@ -121,7 +119,7 @@ pub async fn handle_top_interaction(
 
 pub async fn handle_top_teamkills_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
@@ -231,7 +229,7 @@ pub async fn handle_top_teamkills_interaction(
 
 pub async fn handle_top_suicides_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
@@ -341,7 +339,7 @@ pub async fn handle_top_suicides_interaction(
 
 pub async fn handle_teamkillsbyhour_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
@@ -456,7 +454,7 @@ pub async fn handle_teamkillsbyhour_interaction(
 
 pub async fn handle_rank_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {

@@ -4,7 +4,7 @@ use serenity::{
     model::{prelude::{AttachmentType, interaction::{application_command::ApplicationCommandInteraction, InteractionResponseType}}},
 };
 
-use crate::{battlelog::search_user, global_data::{DatabasePool, HandlebarsContext}, images::{generate_player_rank_image, generate_server_ranks_image, generate_server_suicides_image, generate_server_teamkills_image, generate_server_teamkillsbyhour_image}, models::{Count, PlayerData, PlayerScoreStats, PlayerTeamkillStats, Server, ServerRankTemplate, ServerScoreTemplate, ServerTeamkillsTemplate}};
+use crate::{global_data::{DatabasePool, HandlebarsContext}, images::{generate_player_rank_image, generate_server_ranks_image, generate_server_suicides_image, generate_server_teamkills_image, generate_server_teamkillsbyhour_image}, models::{Count, PlayerData, PlayerScoreStats, PlayerTeamkillStats, Server, ServerRankTemplate, ServerScoreTemplate, ServerTeamkillsTemplate}, battlelog::client::get_user};
 
 // TODO: Lots of duplicate code in this file
 pub async fn handle_top_interaction(
@@ -495,10 +495,10 @@ pub async fn handle_rank_interaction(
         println!("Couldn't find the server {}", why);
 
         command
-        .edit_original_interaction_response(&ctx.http, |response| {
-            response.content("Error finding the server.".to_string())
-        })
-        .await?;
+            .edit_original_interaction_response(&ctx.http, |response| {
+                response.content("Error finding the server.".to_string())
+            })
+            .await?;
 
         return Ok(());
     };
@@ -617,7 +617,7 @@ pub async fn handle_rank_interaction(
 
     let db_soldier = soldiers.get(0).unwrap();
     let soldier_name = db_soldier.soldiername.as_ref().unwrap();
-    let soldier = search_user(soldier_name).await;
+    let soldier = get_user(soldier_name).await;
     let profile_image = match soldier {
         Ok(user) => user.user.gravatar_md5.map_or(
             "https://eaassets-a.akamaihd.net/battlelog/defaultavatars/default-avatar-204.png".to_string(),

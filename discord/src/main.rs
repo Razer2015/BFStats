@@ -6,9 +6,9 @@ mod images;
 mod models;
 mod stats;
 mod vip;
-mod battlelog;
 mod commands;
 mod logging;
+mod battlelog;
 
 use global_data::DatabasePool;
 use handlebars::Handlebars;
@@ -30,21 +30,29 @@ struct Handler;
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            match command.data.name.as_str() {
+            let result = match command.data.name.as_str() {
                 "id" => {
-                    commands::id::run(ctx, &command).await;
+                    commands::id::run(ctx, &command).await
                 },
                 "top" => {
-                    commands::top::run(ctx, &command).await;
+                    commands::top::run(ctx, &command).await
                 }
                 "rank" => {
-                    commands::rank::run(ctx, &command).await;
+                    commands::rank::run(ctx, &command).await
                 }
                 "vip" => {
-                    commands::vip::run(ctx, &command).await;
+                    commands::vip::run(ctx, &command).await
                 }
-                _ => (),
+                "search" => {
+                    commands::search::run(ctx, &command).await
+                }
+                _ => Ok(()),
             };
+
+            if let Err(why) = result
+            {
+                error!("Prosessing slash command failed: {}", why);
+            }
         }
     }
 
@@ -92,6 +100,7 @@ impl EventHandler for Handler {
                 .create_application_command(|command| commands::id::register(command))
                 .create_application_command(|command| commands::top::register(command))
                 .create_application_command(|command| commands::rank::register(command, servers))
+                .create_application_command(|command| commands::search::register(command))
         })
         .await
         .unwrap();

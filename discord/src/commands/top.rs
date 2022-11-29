@@ -6,7 +6,7 @@ use serenity::prelude::Context;
 
 use crate::stats::{handle_top_interaction, handle_top_teamkills_interaction, handle_teamkillsbyhour_interaction, handle_top_suicides_interaction};
 
-pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) {
+pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) -> anyhow::Result<()> {
     let score_type = command
         .data
         .options
@@ -18,27 +18,21 @@ pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) {
 
     match score_type {
         "type_score" => {
-            if let Err(why) = handle_top_interaction(ctx, command).await {
-                println!("Error: {}", why)
-            };
+            handle_top_interaction(ctx, command).await?
         }
         "type_teamkills" => {
-            if let Err(why) = handle_top_teamkills_interaction(ctx, command).await {
-                println!("Error: {}", why)
-            };
+            handle_top_teamkills_interaction(ctx, command).await?
         }
         "type_teamkillbyhour" => {
-            if let Err(why) = handle_teamkillsbyhour_interaction(ctx, command).await {
-                println!("Error: {}", why)
-            };
+            handle_teamkillsbyhour_interaction(ctx, command).await?
         }
         "type_suicides" => {
-            if let Err(why) = handle_top_suicides_interaction(ctx, command).await {
-                println!("Error: {}", why)
-            };
+            handle_top_suicides_interaction(ctx, command).await?
         }
-        _ => println!("Unknown score type: {}", score_type),
+        _ => warn!("Unknown score type: {}", score_type),
     };
+
+    Ok(())
 }
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {

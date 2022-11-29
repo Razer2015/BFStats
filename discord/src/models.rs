@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use serde_aux::prelude::*;
-use std::collections::HashMap;
 
 pub struct Count {
     pub count: i64
@@ -143,49 +142,3 @@ pub struct Context {
 //     pub persona_id: u64,
 //     pub user: User,
 // }
-
-/// # Example
-/// ```ron
-/// SearchResult {
-///     picture: "",
-///     user_id: 2955058489260500539,
-///     user: User {
-///         username: Some(
-///             "PocketWolfy",
-///         ),
-///         gravatar_md5: Some(
-///             "b97c726c98f9f615bd62088c9e4c5cb4",
-///         ),
-///         user_id: 2955058489260500539,
-///         created_at: 1393081344,
-///     },
-///     persona_id: 994520424,
-///     persona_name: "PocketWolfy",
-///     namespace: "cem_ea_id",
-///     games: {
-///         1: "2050",
-///     },
-/// }
-/// ```
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SearchResult {
-    pub picture: String,
-    #[serde(deserialize_with = "deserialize_number_from_string")]
-    pub user_id: u64,
-    pub user: User,
-    #[serde(deserialize_with = "deserialize_number_from_string")]
-    pub persona_id: u64,
-    pub persona_name: String,
-    pub namespace: String,
-    pub games: HashMap<i32, String>,
-}
-
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SearchResponse {
-    pub r#type: String,
-    pub message: String,
-    pub data: Vec<SearchResult>,
-}

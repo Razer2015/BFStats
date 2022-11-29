@@ -6,10 +6,10 @@ use serenity::prelude::Context;
 
 use crate::{stats::{handle_rank_interaction}, models::Server};
 
-pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) {
-    if let Err(why) = handle_rank_interaction(ctx, command).await {
-        println!("Error: {}", why)
-    };
+pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) -> anyhow::Result<()> {
+    handle_rank_interaction(ctx, command).await?;
+
+    Ok(())
 }
 
 fn no_space(x : String) -> String{

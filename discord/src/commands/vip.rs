@@ -5,10 +5,9 @@ use serenity::prelude::Context;
 
 use crate::{vip::handle_vip_interaction};
 
-pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) {
-    if let Err(why) = handle_vip_interaction(ctx, command).await {
-        println!("Error: {}", why)
-    };
+pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) -> anyhow::Result<()> {
+    handle_vip_interaction(ctx, command).await?;
+    Ok(())
 }
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {

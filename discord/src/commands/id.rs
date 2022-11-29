@@ -8,7 +8,7 @@ use serenity::model::prelude::interaction::application_command::{
 };
 use serenity::prelude::Context;
 
-pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) {
+pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) -> anyhow::Result<()> {
     let option = command
         .data
         .options
@@ -25,16 +25,15 @@ pub async fn run(ctx: Context, command: &ApplicationCommandInteraction) {
         content = "Please provide a valid user".to_string();
     }
 
-    if let Err(why) = command
+    command
         .create_interaction_response(&ctx.http, |response| {
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| message.content(content))
         })
-        .await
-    {
-        println!("Cannot respond to slash command: {}", why);
-    }
+        .await?;
+
+    Ok(())
 }
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {

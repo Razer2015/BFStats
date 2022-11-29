@@ -100,7 +100,6 @@ impl EventHandler for Handler {
                 .create_application_command(|command| commands::id::register(command))
                 .create_application_command(|command| commands::top::register(command))
                 .create_application_command(|command| commands::rank::register(command, servers))
-                .create_application_command(|command| commands::search::register(command))
         })
         .await
         .unwrap();
@@ -113,14 +112,24 @@ impl EventHandler for Handler {
         info!("");
 
         // Register global commands (new style)
-        let global_command = Command::create_global_application_command(&ctx.http, |command| {
+        let mut global_commands: Vec<Command> = Vec::new();
+        global_commands.push(Command::create_global_application_command(&ctx.http, |command| {
             commands::vip::register(command)
         })
         .await
-        .unwrap();
+        .unwrap());
 
-        trace!("I created the following global slash commands: {:#?}", global_command);
-        info!("Registered GLOBAL command {} with id {}", global_command.name, global_command.id);
+        global_commands.push(Command::create_global_application_command(&ctx.http, |command| {
+            commands::search::register(command)
+        })
+        .await
+        .unwrap());
+
+        trace!("I created the following global slash commands: {:#?}", global_commands);
+        info!("Registered GLOBAL commands ({})", global_commands.len());
+        for global_command in &global_commands {
+            info!("Command {} with id {}", global_command.name, global_command.id);
+        }
         info!("");
     }
 }

@@ -67,7 +67,7 @@ pub async fn handle_vip_interaction(
             .send_message(&ctx, |m| {
                 m.embed(|e| e
                     .title("No VIP found")
-                    .description("No VIP status was detected for your user. You can donate via the link below. If you have already donated but haven't received your VIP, please contact an admin.\n\n**Donation link**\nhttps://www.g-portal.com/eur/donate/41292a1f7d32b66b33760f3a689902f2/LSDBF4\n\n**Pricing**\n5€ = 30 days\n8€ = 60 days\n10€ = 90 days")
+                    .description("No VIP status was detected for your user. You can donate via the link below. If you have already donated but haven't received your VIP, please contact an admin.\n\n**Donation link**\nhttps://www.g-portal.com/eur/donate/41292a1f7d32b66b33760f3a689902f2/lsdbf4\n\n**Pricing**\n5€ = 30 days\n8€ = 60 days\n10€ = 90 days")
                     .footer(|f| {
                         f
                         .text("Battlefield 4 - LSD")
@@ -104,7 +104,7 @@ pub async fn handle_vip_interaction(
                         })
                         .field("Status", &vip.status, true)
                         .field(if &vip.active > &0 { "Expires" } else { "Expired" }, format!("<t:{}:R>", vip.timestamp.unwrap()), true)
-                        .field("Extend VIP", "https://www.g-portal.com/eur/donate/41292a1f7d32b66b33760f3a689902f2/LSDBF4", false)
+                        .field("Extend VIP", "https://www.g-portal.com/eur/donate/41292a1f7d32b66b33760f3a689902f2/lsdbf4", false)
                         .color(if &vip.active > &0 { Colour::new(4321431) } else { Colour::new(16711680) })
                         .timestamp(&Timestamp::from_unix_timestamp(utc.timestamp()).unwrap())
                         .author(|f| {

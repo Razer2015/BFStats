@@ -162,7 +162,7 @@ jobs:
         with:
           context: ./imageapi
           platforms: linux/amd64,linux/arm64
-          file: ./imageapi/Dockerfile
+          file: ./imageapi/Dockerfile.multiarch
           push: ${{ inputs.push }}
           tags: ${{ secrets.DOCKER_USERNAME }}/bfstats-imageapi:${{ github.event.inputs.environment }}-${{ env.RELEASE_VERSION }},${{ secrets.DOCKER_USERNAME }}/bfstats-imageapi:latest
           cache-from: type=gha

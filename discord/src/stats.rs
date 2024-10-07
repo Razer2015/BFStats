@@ -1,18 +1,15 @@
 use rand::Rng;
 use serenity::{
     client::Context,
-    http::AttachmentType,
-    model::interactions::{
-        application_command::ApplicationCommandInteraction, InteractionResponseType,
-    },
+    model::{prelude::{AttachmentType, interaction::{application_command::ApplicationCommandInteraction, InteractionResponseType}}},
 };
 
-use crate::{battlelog::search_user, global_data::{DatabasePool, HandlebarsContext}, images::{generate_player_rank_image, generate_server_ranks_image, generate_server_suicides_image, generate_server_teamkills_image, generate_server_teamkillsbyhour_image}, models::{Count, PlayerData, PlayerScoreStats, PlayerTeamkillStats, Server, ServerRankTemplate, ServerScoreTemplate, ServerTeamkillsTemplate}};
+use crate::{global_data::{DatabasePool, HandlebarsContext}, images::{generate_player_rank_image, generate_server_ranks_image, generate_server_suicides_image, generate_server_teamkills_image, generate_server_teamkillsbyhour_image}, models::{Count, PlayerData, PlayerScoreStats, PlayerTeamkillStats, Server, ServerRankTemplate, ServerScoreTemplate, ServerTeamkillsTemplate}, battlelog::client::get_user};
 
 // TODO: Lots of duplicate code in this file
 pub async fn handle_top_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
@@ -65,7 +62,16 @@ pub async fn handle_top_interaction(
 
     let data = sqlx::query_as!(
         PlayerScoreStats,
-        "SELECT soldiername, FORMAT(score, '#,0') AS score, globalrank as global_rank, kills, deaths, tks as teamkills, suicide as suicides, FORMAT(kills / deaths, 2) AS kdr, (@row_number:=@row_number+1)+? AS position
+        "SELECT soldiername, 
+            FORMAT(score, '#,0') AS score, 
+            globalrank as global_rank, 
+            kills, 
+            deaths, 
+            tks as teamkills, 
+            suicide as suicides, 
+            FORMAT(kills / deaths, 2) AS kdr, 
+            (@row_number:=@row_number+1)+? AS position, 
+            CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime
         FROM tbl_playerstats AS ps
         INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID
         INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID
@@ -91,7 +97,7 @@ pub async fn handle_top_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Generating Score image..."))
+            response.content("Generating Score image...".to_string())
         })
         .await?
         .id
@@ -113,7 +119,7 @@ pub async fn handle_top_interaction(
 
 pub async fn handle_top_teamkills_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
@@ -166,7 +172,16 @@ pub async fn handle_top_teamkills_interaction(
 
     let data = sqlx::query_as!(
         PlayerScoreStats,
-        "SELECT soldiername, FORMAT(score, '#,0') AS score, globalrank as global_rank, kills, deaths, tks as teamkills, suicide as suicides, FORMAT(kills / deaths, 2) AS kdr, (@row_number:=@row_number+1)+? AS position
+        "SELECT soldiername, 
+            FORMAT(score, '#,0') AS score, 
+            globalrank as global_rank, 
+            kills, 
+            deaths, 
+            tks as teamkills, 
+            suicide as suicides, 
+            FORMAT(kills / deaths, 2) AS kdr, 
+            (@row_number:=@row_number+1)+? AS position, 
+            CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime
         FROM tbl_playerstats AS ps
         INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID
         INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID
@@ -192,7 +207,7 @@ pub async fn handle_top_teamkills_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Generating Teamkills image..."))
+            response.content("Generating Teamkills image...".to_string())
         })
         .await?
         .id
@@ -214,7 +229,7 @@ pub async fn handle_top_teamkills_interaction(
 
 pub async fn handle_top_suicides_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
@@ -267,7 +282,16 @@ pub async fn handle_top_suicides_interaction(
 
     let data = sqlx::query_as!(
         PlayerScoreStats,
-        "SELECT soldiername, FORMAT(score, '#,0') AS score, globalrank as global_rank, kills, deaths, tks as teamkills, suicide as suicides, FORMAT(kills / deaths, 2) AS kdr, (@row_number:=@row_number+1)+? AS position
+        "SELECT soldiername, 
+            FORMAT(score, '#,0') AS score, 
+            globalrank as global_rank, 
+            kills, 
+            deaths, 
+            tks as teamkills, 
+            suicide as suicides, 
+            FORMAT(kills / deaths, 2) AS kdr, 
+            (@row_number:=@row_number+1)+? AS position,
+            CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime
         FROM tbl_playerstats AS ps
         INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID
         INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID
@@ -293,7 +317,7 @@ pub async fn handle_top_suicides_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Generating Suicides image..."))
+            response.content("Generating Suicides image...".to_string())
         })
         .await?
         .id
@@ -315,7 +339,7 @@ pub async fn handle_top_suicides_interaction(
 
 pub async fn handle_teamkillsbyhour_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
@@ -408,7 +432,7 @@ pub async fn handle_teamkillsbyhour_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Generating TKH image..."))
+            response.content("Generating TKH image...".to_string())
         })
         .await?
         .id
@@ -430,7 +454,7 @@ pub async fn handle_teamkillsbyhour_interaction(
 
 pub async fn handle_rank_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
@@ -471,12 +495,10 @@ pub async fn handle_rank_interaction(
         println!("Couldn't find the server {}", why);
 
         command
-        .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!(
-                "Error finding the server."
-            ))
-        })
-        .await?;
+            .edit_original_interaction_response(&ctx.http, |response| {
+                response.content("Error finding the server.".to_string())
+            })
+            .await?;
 
         return Ok(());
     };
@@ -580,9 +602,7 @@ pub async fn handle_rank_interaction(
     if soldiers.len() != 1 {
         command
             .edit_original_interaction_response(&ctx.http, |response| {
-                response.content(format!(
-                    "Player with the given name was not found from this server."
-                ))
+                response.content("Player with the given name was not found from this server.".to_string())
             })
             .await?;
 
@@ -591,15 +611,15 @@ pub async fn handle_rank_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Fetching the soldier from Battlelog..."))
+            response.content("Fetching the soldier from Battlelog...".to_string())
         })
         .await?.id.0;
 
     let db_soldier = soldiers.get(0).unwrap();
     let soldier_name = db_soldier.soldiername.as_ref().unwrap();
-    let soldier = search_user(&soldier_name).await;
+    let soldier = get_user(soldier_name).await;
     let profile_image = match soldier {
-        Ok(user) => user.user.gravatar_md5.clone().map_or(
+        Ok(user) => user.user.gravatar_md5.map_or(
             "https://eaassets-a.akamaihd.net/battlelog/defaultavatars/default-avatar-204.png".to_string(),
             |md5| format!("https://secure.gravatar.com/avatar/{}?s=204&d=https://eaassets-a.akamaihd.net/battlelog/defaultavatars/default-avatar-204.png", md5)
         ),
@@ -613,9 +633,9 @@ pub async fn handle_rank_interaction(
     let template_data = ServerRankTemplate {
         base_path: format!("{}public/", dotenv::var("IMAGEAPI_URL").unwrap_or("http://localhost:3000/".to_string())),
         servername: server.server_name,
-        total_players: total_players,
+        total_players,
         profile_image_url: profile_image,
-        bg_index: bg_index,
+        bg_index,
         clan_tag: db_soldier.clan_tag.to_owned(),
         soldiername: db_soldier.soldiername.to_owned(),
         rank_score: db_soldier.rank_score,
@@ -638,7 +658,7 @@ pub async fn handle_rank_interaction(
 
     command
         .edit_followup_message(&ctx.http, msg_id, |f| {
-            f.content(format!("Generating Rank image..."))
+            f.content("Generating Rank image...".to_string())
         })
         .await?;
 

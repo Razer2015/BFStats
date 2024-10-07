@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 dotenv = "0.15"
-serenity = { git = "https://github.com/Razer2015/serenity.git", branch = "followup-attachments", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "unstable_discord_api"] }
+serenity = { version = "0.11.5", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "unstable_discord_api"] }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 anyhow = "1.0.42"
 rand = "0.8.4"
@@ -18,10 +18,14 @@ serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1.0.64" }
 serde-aux = { version = "2.2.0" }
 
-sqlx = { version = "0.5", features = [ "runtime-tokio-rustls", "mysql", "time", "offline" ] }
+sqlx = { version = "0.6.2", features = [ "runtime-tokio-rustls", "mysql", "time", "offline" ] }
 
 reqwest = { version = "0.11.4", default-features = false, features = ["json", "rustls-tls", "blocking"] }
 http = { version = "0.2.4" }
 
-handlebars = "4.1.1"
+handlebars = { version = "4.1.1", features = ["script_helper"]}
 oxipng = "5.0.0"
+
+# Logging
+log = "0.4"
+flexi_logger = { version = "0.17", features = ["colors"] }

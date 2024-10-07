@@ -97,3 +97,29 @@
     /* z-index: 1000; */
     text-align: center;
 }
+
+.full-container {
+    width: calc(100% - 16px);
+    display: block;
+    box-sizing: border-box;
+    float: left;
+    margin-left: 16px;
+}
+
+.half-container {
+    width: calc(50% - 16px);
+    display: block;
+    box-sizing: border-box;
+    float: left;
+    margin-left: 16px;
+}
+
+table.scoreboard .common-playername-personaname.wide {
+    width: 460px;
+}
+
+.custom-font-size,
+.custom-font-size th,
+.custom-font-size td {
+    font-size: 25px!important;
+}

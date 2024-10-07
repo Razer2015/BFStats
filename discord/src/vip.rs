@@ -1,10 +1,7 @@
-use serenity::utils::Colour;
+use serenity::{utils::Colour, model::{Timestamp, prelude::interaction::{application_command::ApplicationCommandInteraction, InteractionResponseType}}};
 use chrono::prelude::*;
 use serenity::{
     client::Context,
-    model::interactions::{
-        application_command::ApplicationCommandInteraction, InteractionResponseType,
-    },
 };
 
 use crate::{
@@ -16,7 +13,7 @@ use crate::{
 
 pub async fn handle_vip_interaction(
     ctx: Context,
-    command: ApplicationCommandInteraction,
+    command: &ApplicationCommandInteraction,
 ) -> anyhow::Result<()> {
     command
         .create_interaction_response(&ctx.http, |response| {
@@ -35,7 +32,7 @@ pub async fn handle_vip_interaction(
 
     let msg_id = command
         .edit_original_interaction_response(&ctx.http, |response| {
-            response.content(format!("Fetching data..."))
+            response.content("Fetching data...".to_string())
         })
         .await?
         .id
@@ -65,12 +62,12 @@ pub async fn handle_vip_interaction(
     .await?;
 
     let utc: DateTime<Utc> = Utc::now();
-    if vips.len() == 0 {
+    if vips.is_empty() {
         dm_chan
             .send_message(&ctx, |m| {
                 m.embed(|e| e
                     .title("No VIP found")
-                    .description("No VIP status was detected for your user. You can donate via the link below. If you have already donated but haven't received your VIP, please contact an admin.\n\n**Donation link**\nhttps://www.g-portal.com/eur/donate/41292a1f7d32b66b33760f3a689902f2/LSDBF4\n\n**Pricing**\n5€ = 30 days\n8€ = 60 days\n10€ = 90 days")
+                    .description("No VIP status was detected for your user. You can donate via the link below. If you have already donated but haven't received your VIP, please contact an admin.\n\n**Donation link**\nhttps://www.g-portal.com/eur/donate/41292a1f7d32b66b33760f3a689902f2/lsdbf4\n\n**Pricing**\n5€ = 30 days\n8€ = 60 days\n10€ = 90 days")
                     .footer(|f| {
                         f
                         .text("Battlefield 4 - LSD")
@@ -78,7 +75,7 @@ pub async fn handle_vip_interaction(
                         f
                     })
                     .color(Colour::new(65535))
-                    .timestamp(&utc)
+                    .timestamp(&Timestamp::from_unix_timestamp(utc.timestamp()).unwrap())
                     .author(|f| {
                         f
                         .name("Battlefield 4 - LSD")
@@ -107,9 +104,9 @@ pub async fn handle_vip_interaction(
                         })
                         .field("Status", &vip.status, true)
                         .field(if &vip.active > &0 { "Expires" } else { "Expired" }, format!("<t:{}:R>", vip.timestamp.unwrap()), true)
-                        .field("Extend VIP", "https://www.g-portal.com/eur/donate/41292a1f7d32b66b33760f3a689902f2/LSDBF4", false)
+                        .field("Extend VIP", "https://www.g-portal.com/eur/donate/41292a1f7d32b66b33760f3a689902f2/lsdbf4", false)
                         .color(if &vip.active > &0 { Colour::new(4321431) } else { Colour::new(16711680) })
-                        .timestamp(&utc)
+                        .timestamp(&Timestamp::from_unix_timestamp(utc.timestamp()).unwrap())
                         .author(|f| {
                             f
                             .name(vip.playername.clone().unwrap_or("Unknown".to_string()))

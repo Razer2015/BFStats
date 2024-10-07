@@ -1,0 +1,198 @@
+name: Manual build and push
+run-name: 'Manual build and push'
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        required: true
+        description: Environment
+        options:
+          - test
+          - production
+      version_level:
+        type: choice
+        required: true
+        description: Version level (test only)
+        options:
+          - commit
+          - patch
+          - minor
+          - major
+        default: 'patch'
+      specific-version:
+        description: 'Specific version'
+        required: false
+        default: ''
+      push:
+        description: 'Push to DockerHub'
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  buildVariables:
+    name: 'Get variables and install dependencies'
+    runs-on: ubuntu-latest
+    outputs:
+      tag_version: ${{ steps.set_outputs.outputs.TAG_VERSION }}
+      release_version: ${{ steps.set_outputs.outputs.RELEASE_VERSION }}
+      commit_branch: ${{ steps.set_outputs.outputs.COMMIT_BRANCH }}
+      commit_hash: ${{ steps.set_outputs.outputs.COMMIT_HASH }}
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: 'Get Previous tag'
+        id: previoustag
+        run: |
+          LATEST_TAG=$(git tag -l "*" | grep -P '^\d+\.\d+\.\d+$' | sort -V --reverse | sed -n 1p)
+          echo "tag=$(echo "${LATEST_TAG}")" >> $GITHUB_OUTPUT
+          [[ -z "${LATEST_TAG}" ]] && { echo "No tag found, using fallback 0.0.0..."; echo "tag=$(echo "0.0.0")" >> $GITHUB_OUTPUT; } || echo "Tag found: ${LATEST_TAG}"
+
+      - name: 'Get next version'
+        id: semvers
+        uses: 'WyriHaximus/github-action-next-semvers@v1'
+        with:
+          version: ${{ steps.previoustag.outputs.tag }}
+
+      - name: Print WyriHaximus current and next version
+        run: |
+          echo "Major version: ${{ steps.semvers.outputs.major }}"
+          echo "Minor version: ${{ steps.semvers.outputs.minor }}"
+          echo "Patch version: ${{ steps.semvers.outputs.patch }}"
+
+      - name: Get Branch
+        id: branch
+        run: echo "COMMIT_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Get Hash
+        id: hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
+
+      - name: Check Branch
+        run: echo "${{ env.COMMIT_BRANCH }}"
+
+      - name: Check Hash
+        run: echo "${{ env.COMMIT_HASH }}"
+
+      - name: Set release version
+        run: |
+          if ${{ github.event.inputs.specific-version != '' }};
+          then
+            echo "TAG_VERSION=${{ github.event.inputs.specific-version }}" >> $GITHUB_ENV
+            echo "RELEASE_VERSION=${{ github.event.inputs.specific-version }}" >> $GITHUB_ENV
+          elif ${{ github.event.inputs.environment == 'production' }};
+          then
+              echo "TAG_VERSION=${{ steps.previoustag.outputs.tag }}" >> $GITHUB_ENV
+              echo "RELEASE_VERSION=${{ steps.previoustag.outputs.tag }}" >> $GITHUB_ENV
+          else
+            if ${{ github.event.inputs.version_level == 'major' }};
+            then
+              echo "TAG_VERSION=${{ steps.semvers.outputs.major }}" >> $GITHUB_ENV
+              echo "RELEASE_VERSION=${{ steps.semvers.outputs.major }}" >> $GITHUB_ENV
+            elif ${{ github.event.inputs.version_level == 'minor' }};
+            then
+              echo "TAG_VERSION=${{ steps.semvers.outputs.minor }}" >> $GITHUB_ENV
+              echo "RELEASE_VERSION=${{ steps.semvers.outputs.minor }}" >> $GITHUB_ENV
+            elif ${{ github.event.inputs.version_level == 'patch' }};
+            then
+              echo "TAG_VERSION=${{ steps.semvers.outputs.patch }}" >> $GITHUB_ENV
+              echo "RELEASE_VERSION=${{ steps.semvers.outputs.patch }}" >> $GITHUB_ENV
+            else
+              echo "TAG_VERSION=${{ steps.semvers.outputs.patch }}-${{ env.COMMIT_HASH }}" >> $GITHUB_ENV
+              echo "RELEASE_VERSION=${{ steps.semvers.outputs.patch }}-${{ env.COMMIT_HASH }}" >> $GITHUB_ENV
+            fi
+          fi
+
+      - name: Add test prefix to tag if environment is test
+        if: ${{ github.event.inputs.environment == 'production' }}
+        run: |
+          echo "TAG_VERSION=${{ env.TAG_VERSION }}-production" >> $GITHUB_ENV
+
+      - name: Print release and tag version
+        run: |
+          echo "Tag version: ${{ env.TAG_VERSION }}"
+          echo "Release version: ${{ env.RELEASE_VERSION }}"
+
+      - name: Set output variables
+        id: set_outputs
+        run: |
+          echo "TAG_VERSION=${{ env.TAG_VERSION }}" >> $GITHUB_OUTPUT
+          echo "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" >> $GITHUB_OUTPUT
+          echo "COMMIT_BRANCH=${{ env.COMMIT_BRANCH }}" >> $GITHUB_OUTPUT
+          echo "COMMIT_HASH=${{ env.COMMIT_HASH }}" >> $GITHUB_OUTPUT
+
+  buildDocker:
+    name: 'Build and push docker images'
+    needs: [buildVariables]
+    runs-on: ubuntu-latest
+    env:
+      TAG_VERSION: ${{ needs.buildVariables.outputs.tag_version }}
+      RELEASE_VERSION: ${{ needs.buildVariables.outputs.release_version }}
+      COMMIT_BRANCH: ${{ needs.buildVariables.outputs.commit_branch }}
+      COMMIT_HASH: ${{ needs.buildVariables.outputs.commit_hash }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        id: multiarch_build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./imageapi
+          platforms: linux/amd64,linux/arm64
+          file: ./imageapi/Dockerfile
+          push: ${{ inputs.push }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/bfstats-imageapi:${{ github.event.inputs.environment }}-${{ env.RELEASE_VERSION }},${{ secrets.DOCKER_USERNAME }}/bfstats-imageapi:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  create_release:
+    needs: [buildVariables, buildDocker]
+    permissions:
+      contents: write
+    name: Create a new release
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.version_level != 'commit' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        env:
+          TAG_VERSION: ${{ needs.buildVariables.outputs.tag_version }}
+          RELEASE_VERSION: ${{ needs.buildVariables.outputs.release_version }}
+          COMMIT_BRANCH: ${{ needs.buildVariables.outputs.commit_branch }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag: '${{ env.TAG_VERSION }}'
+          name: '${{ github.event.inputs.environment }}-${{ env.RELEASE_VERSION }} (ImageAPI)'
+          commit: '${{ env.COMMIT_BRANCH }}'
+          draft: false
+          prerelease: ${{ github.event.inputs.environment != 'production' }}
+          allowUpdates: true
+          updateOnlyUnreleased: true

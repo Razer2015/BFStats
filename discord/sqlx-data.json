@@ -1,6 +1,6 @@
 {
   "db": "MySQL",
-  "05e440f47492b6d7ab3ae7c896efdf87922e503316a06c8aca32f81e0c19c016": {
+  "3ece495542ab7056eba5455828bae801d1d85e0cbc9bdc5d5feeabb6ed9603f9": {
     "describe": {
       "columns": [
         {
@@ -110,115 +110,10 @@
             "max_size": 23,
             "type": "Double"
           }
-        }
-      ],
-      "nullable": [
-        true,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true
-      ],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "SELECT soldiername, FORMAT(score, '#,0') AS score, globalrank as global_rank, kills, deaths, tks as teamkills, suicide as suicides, FORMAT(kills / deaths, 2) AS kdr, (@row_number:=@row_number+1)+? AS position\n        FROM tbl_playerstats AS ps\n        INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID\n        INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID\n        CROSS JOIN (SELECT @row_number:=0) AS t\n        ORDER BY suicides DESC\n        LIMIT ? OFFSET ?"
-  },
-  "0918906b9506f747faa3c392c07cae3f2c9107500cafcd9ac400f7f116d41ee0": {
-    "describe": {
-      "columns": [
-        {
-          "name": "soldiername",
-          "ordinal": 0,
-          "type_info": {
-            "char_set": 224,
-            "flags": {
-              "bits": 8
-            },
-            "max_size": 180,
-            "type": "VarString"
-          }
         },
         {
-          "name": "score",
-          "ordinal": 1,
-          "type_info": {
-            "char_set": 224,
-            "flags": {
-              "bits": 0
-            },
-            "max_size": 56,
-            "type": "VarString"
-          }
-        },
-        {
-          "name": "global_rank",
-          "ordinal": 2,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 33
-            },
-            "max_size": 5,
-            "type": "Short"
-          }
-        },
-        {
-          "name": "kills",
-          "ordinal": 3,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 33
-            },
-            "max_size": 10,
-            "type": "Long"
-          }
-        },
-        {
-          "name": "deaths",
-          "ordinal": 4,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 33
-            },
-            "max_size": 10,
-            "type": "Long"
-          }
-        },
-        {
-          "name": "teamkills",
-          "ordinal": 5,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 33
-            },
-            "max_size": 10,
-            "type": "Long"
-          }
-        },
-        {
-          "name": "suicides",
-          "ordinal": 6,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 33
-            },
-            "max_size": 10,
-            "type": "Long"
-          }
-        },
-        {
-          "name": "kdr",
-          "ordinal": 7,
+          "name": "playtime",
+          "ordinal": 9,
           "type_info": {
             "char_set": 224,
             "flags": {
@@ -227,18 +122,6 @@
             "max_size": 72,
             "type": "VarString"
           }
-        },
-        {
-          "name": "position",
-          "ordinal": 8,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 128
-            },
-            "max_size": 23,
-            "type": "Double"
-          }
         }
       ],
       "nullable": [
@@ -250,13 +133,14 @@
         false,
         false,
         true,
+        true,
         true
       ],
       "parameters": {
         "Right": 3
       }
     },
-    "query": "SELECT soldiername, FORMAT(score, '#,0') AS score, globalrank as global_rank, kills, deaths, tks as teamkills, suicide as suicides, FORMAT(kills / deaths, 2) AS kdr, (@row_number:=@row_number+1)+? AS position\n        FROM tbl_playerstats AS ps\n        INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID\n        INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID\n        CROSS JOIN (SELECT @row_number:=0) AS t\n        ORDER BY rankScore\n        LIMIT ? OFFSET ?"
+    "query": "SELECT soldiername, \n            FORMAT(score, '#,0') AS score, \n            globalrank as global_rank, \n            kills, \n            deaths, \n            tks as teamkills, \n            suicide as suicides, \n            FORMAT(kills / deaths, 2) AS kdr, \n            (@row_number:=@row_number+1)+? AS position, \n            CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime\n        FROM tbl_playerstats AS ps\n        INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID\n        INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID\n        CROSS JOIN (SELECT @row_number:=0) AS t\n        ORDER BY tks DESC\n        LIMIT ? OFFSET ?"
   },
   "55124ef5ea6b8e9ce9283fb51cf4314f0164f0075ac567db0f9007783306e2c1": {
     "describe": {
@@ -555,6 +439,148 @@
     },
     "query": "SELECT serverid as server_id, servername as server_name FROM tbl_server LIMIT 1"
   },
+  "95933806117cc933bf0b0eda45c5255a09e6638a9ec5cb00612142ddefb67d51": {
+    "describe": {
+      "columns": [
+        {
+          "name": "soldiername",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 8
+            },
+            "max_size": 180,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "score",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 0
+            },
+            "max_size": 56,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "global_rank",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 33
+            },
+            "max_size": 5,
+            "type": "Short"
+          }
+        },
+        {
+          "name": "kills",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 33
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "deaths",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 33
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "teamkills",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 33
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "suicides",
+          "ordinal": 6,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 33
+            },
+            "max_size": 10,
+            "type": "Long"
+          }
+        },
+        {
+          "name": "kdr",
+          "ordinal": 7,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 0
+            },
+            "max_size": 72,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "position",
+          "ordinal": 8,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 128
+            },
+            "max_size": 23,
+            "type": "Double"
+          }
+        },
+        {
+          "name": "playtime",
+          "ordinal": 9,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 0
+            },
+            "max_size": 72,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "SELECT soldiername, \n            FORMAT(score, '#,0') AS score, \n            globalrank as global_rank, \n            kills, \n            deaths, \n            tks as teamkills, \n            suicide as suicides, \n            FORMAT(kills / deaths, 2) AS kdr, \n            (@row_number:=@row_number+1)+? AS position,\n            CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime\n        FROM tbl_playerstats AS ps\n        INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID\n        INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID\n        CROSS JOIN (SELECT @row_number:=0) AS t\n        ORDER BY suicides DESC\n        LIMIT ? OFFSET ?"
+  },
   "a23d0351b86e9275d21f3372389a0a18f92437f0a500a4e938350840e7b43f66": {
     "describe": {
       "columns": [
@@ -748,32 +774,7 @@
     },
     "query": "SELECT soldiername, \n            FORMAT(score, '#,0') AS score,\n            globalrank as global_rank,\n            kills,\n            deaths,\n            tks as teamkills,\n            suicide as suicides,\n            FORMAT(kills / deaths, 2) AS kdr,\n            (@row_number:=@row_number+1)+? AS position,\n            date_format(from_unixtime(playtime), '%e d, %k h, %i m') AS playtime,\n            FORMAT(tks / (playtime / 3600), 2) AS teamkills_by_hour\n        FROM tbl_playerstats AS ps\n        INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID\n        INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID\n        CROSS JOIN (SELECT @row_number:=0) AS t\n        WHERE playtime > 86400\n        ORDER BY (tks / (playtime / 3600)) DESC\n        LIMIT ? OFFSET ?"
   },
-  "c9fb554a90854d3fd2ce13fac4a05cf6259bd457aedeb11fccd693016dac706d": {
-    "describe": {
-      "columns": [
-        {
-          "name": "count",
-          "ordinal": 0,
-          "type_info": {
-            "char_set": 63,
-            "flags": {
-              "bits": 129
-            },
-            "max_size": 21,
-            "type": "LongLong"
-          }
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "SELECT COUNT(*) as count FROM tbl_playerstats"
-  },
-  "cea0549f6fb685ae0ae95ddf9b92523133cfdc728a96c3419d290e8c431e740d": {
+  "c9640da15ede2bac4a781b3d325a6cfaf21db9308a6993cd02110c00be17e3ab": {
     "describe": {
       "columns": [
         {
@@ -883,6 +884,18 @@
             "max_size": 23,
             "type": "Double"
           }
+        },
+        {
+          "name": "playtime",
+          "ordinal": 9,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 0
+            },
+            "max_size": 72,
+            "type": "VarString"
+          }
         }
       ],
       "nullable": [
@@ -894,13 +907,39 @@
         false,
         false,
         true,
+        true,
         true
       ],
       "parameters": {
         "Right": 3
       }
     },
-    "query": "SELECT soldiername, FORMAT(score, '#,0') AS score, globalrank as global_rank, kills, deaths, tks as teamkills, suicide as suicides, FORMAT(kills / deaths, 2) AS kdr, (@row_number:=@row_number+1)+? AS position\n        FROM tbl_playerstats AS ps\n        INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID\n        INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID\n        CROSS JOIN (SELECT @row_number:=0) AS t\n        ORDER BY tks DESC\n        LIMIT ? OFFSET ?"
+    "query": "SELECT soldiername, \n            FORMAT(score, '#,0') AS score, \n            globalrank as global_rank, \n            kills, \n            deaths, \n            tks as teamkills, \n            suicide as suicides, \n            FORMAT(kills / deaths, 2) AS kdr, \n            (@row_number:=@row_number+1)+? AS position, \n            CONCAT(FLOOR(playtime * 0.00027777777777778), 'h ', MINUTE(from_unixtime(playtime)), 'm') AS playtime\n        FROM tbl_playerstats AS ps\n        INNER JOIN tbl_server_player AS sp ON ps.StatsID = sp.StatsID\n        INNER JOIN tbl_playerdata AS pd ON sp.PlayerID = pd.PlayerID\n        CROSS JOIN (SELECT @row_number:=0) AS t\n        ORDER BY rankScore\n        LIMIT ? OFFSET ?"
+  },
+  "c9fb554a90854d3fd2ce13fac4a05cf6259bd457aedeb11fccd693016dac706d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "count",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 129
+            },
+            "max_size": 21,
+            "type": "LongLong"
+          }
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT COUNT(*) as count FROM tbl_playerstats"
   },
   "dc2e669af9feb139e689a0934f7b65ceac0d541033f6a6d82b7447798d6db501": {
     "describe": {

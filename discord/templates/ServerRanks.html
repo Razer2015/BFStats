@@ -21,6 +21,7 @@
                 <th class="center">KDR</th>
                 <th class="center">TKS</th>
                 <th class="center">Suicides</th>
+                <th class="center">Playtime</th>
                 <th class="last right">Score</th>
             </tr>
         </thead>
@@ -28,7 +29,7 @@
             {{#each players}}
             <tr class="battlereport-teamstats-row pos_nr1 player">
                 <td class="center">
-                    <span>{{position}}</span>
+                    <span>{{to_int position}}</span>
                 </td>
                 <td class="soldier-name">
                     <div class="user-personarank">
@@ -45,6 +46,7 @@
                 <td class="center">{{kdr}}</td>
                 <td class="center">{{teamkills}}</td>
                 <td class="center">{{suicides}}</td>
+                <td class="center">{{playtime}}</td>
                 <td class="last right">{{score}}</td>
             </tr>
             {{/each}}

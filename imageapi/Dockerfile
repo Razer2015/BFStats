@@ -16,6 +16,9 @@ FROM mhart/alpine-node:slim-16
 # RUN apk add --no-cache tini
 # ENTRYPOINT ["/sbin/tini", "--"]
 
+RUN apk add -X http://nl.alpinelinux.org/alpine/edge/community -u alpine-keys --allow-untrusted
+RUN apk add -X http://nl.alpinelinux.org/alpine/edge/main -u alpine-keys --allow-untrusted
+
 RUN apk update && apk add --no-cache nmap && \
     echo @edge http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
     echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
